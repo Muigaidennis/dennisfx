@@ -3,65 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dennis Deriv Trading</title>
+    <title>DennisFX - Deriv Trading</title>
     <script src="https://cdn.jsdelivr.net/npm/@deriv/deriv-api/dist/deriv-api.min.js"></script>
     <style>
-        body { 
-            margin: 0; 
-            font-family: Arial, sans-serif; 
-            background: #0f0f17; 
-            color: white; 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        header { 
-            background: #1a1a2e; 
-            padding: 15px 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+        header {
+            background: #161b22;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
         }
-        .logo { font-size: 24px; font-weight: bold; color: #ff4d4d; }
-        main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .card { 
-            background: #1e1e2f; 
-            padding: 40px; 
-            border-radius: 12px; 
-            text-align: center; 
-            max-width: 500px; 
-            width: 100%; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff4d4d;
         }
-        h1 { color: #ff4d4d; margin-bottom: 20px; }
-        button { 
-            background: #ff4d4d; 
-            color: white; 
-            border: none; 
-            padding: 15px 30px; 
-            font-size: 18px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            margin: 15px; 
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-        button:hover { background: #e63939; }
-        #status { margin-top: 30px; font-size: 18px; }
-        #balance { font-size: 32px; color: #4caf50; margin: 20px 0; }
+        .card {
+            background: #161b22;
+            padding: 50px 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid #30363d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #ff4d4d;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 30px;
+            color: #8b949e;
+        }
+        .btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #e63939;
+        }
+        .signup-btn {
+            background: #238636;
+        }
+        .signup-btn:hover {
+            background: #2ea043;
+        }
+        #status {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #58a6ff;
+        }
+        #balance {
+            font-size: 36px;
+            color: #4caf50;
+            margin: 20px 0;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">Dennis Deriv Trading</div>
+        <div class="logo">DennisFX</div>
     </header>
 
     <main>
         <div class="card">
-            <h1>Welcome to Dennis Deriv Trading</h1>
+            <h1>Welcome to DennisFX</h1>
             <p>Connect your Deriv account and start trading with free bots & signals</p>
 
-            <button onclick="connectDeriv()">Connect Deriv Account</button>
-            <a href="https://deriv.com/signup/?affiliate_token=YOUR_AFFILIATE_TOKEN">
-                <button>Sign Up New Deriv Account (Get Bonus)</button>
+            <button class="btn" onclick="connectDeriv()">Connect Deriv Account</button>
+            <a href="https://deriv.com/signup/?affiliate_token=YOUR_AFFILIATE_TOKEN" target="_blank">
+                <button class="btn signup-btn">Sign Up New Deriv Account</button>
             </a>
 
             <div id="status">Status: Not connected</div>
@@ -70,27 +107,31 @@
     </main>
 
     <script>
-        const appId = 117276;  // Your existing App ID
-        let api = null;
+        const appId = 117276;  // Your App ID
 
         function connectDeriv() {
-            document.getElementById('status').innerText = 'Connecting...';
+            document.getElementById('status').innerText = 'Connecting... Please wait';
 
-            api = new DerivAPI({ app_id: appId });
-
-            // This opens Deriv login in popup or redirect
-            window.location.href = https://oauth.deriv.com/oauth2/authorize?app_id=\( {appId}&scope=read,trade,trading_information,payments&redirect_uri= \){encodeURIComponent(window.location.origin + '/callback')};
+            // Redirect to Deriv OAuth login
+            const redirectUri = window.location.origin + '/callback';
+            window.location.href = https://oauth.deriv.com/oauth2/authorize?app_id=\( {appId}&scope=read,trade,trading_information,payments&redirect_uri= \){encodeURIComponent(redirectUri)};
         }
 
-        // After redirect back (you'll add /callback later)
+        // Handle redirect back (token in URL)
         window.addEventListener('load', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token1');
             if (token) {
-                api = new DerivAPI({ authorize: token });
+                localStorage.setItem('deriv_token', token);
+                document.getElementById('status').innerText = 'Connected! Loading balance...';
+
+                const api = new DerivAPI({ authorize: token });
                 api.balance().subscribe(b => {
                     document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
-                    document.getElementById('status').innerText = 'Connected!';
+                    document.getElementById('status').innerText = 'Connected successfully';
+                }, err => {
+                    document.getElementById('status').innerText = 'Error loading balance';
+                    console.error(err);
                 });
             }
         });
