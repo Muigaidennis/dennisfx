@@ -63,6 +63,8 @@
             cursor: pointer;
             margin: 15px;
             transition: background 0.2s;
+            display: inline-block;
+            text-decoration: none;
         }
         .btn:hover {
             background: #e63939;
@@ -97,25 +99,38 @@
             <p>Connect your Deriv account and start trading with free bots & signals</p>
 
             <button class="btn" onclick="connectDeriv()">Connect Deriv Account</button>
-            <a href="https://deriv.com/signup/?affiliate_token=YOUR_AFFILIATE_TOKEN" target="_blank">
-                <button class="btn signup-btn">Sign Up New Deriv Account</button>
+            <a href="https://deriv.com/signup/?affiliate_token=YOUR_REAL_AFFILIATE_TOKEN_HERE" target="_blank" class="btn signup-btn">
+                Sign Up New Deriv Account
             </a>
 
-            <div id="status">Status: Not connected</div>
+            <div id="status">Status: Loading balance...</div>
             <div id="balance">Balance: —</div>
         </div>
     </main>
 
-     const appId = 117276;
-    const token = 'YeLZyhksv23BEGy';  // ← paste your token here for testing only
+    <script>
+        const appId = 117276;
+        const token = 'YeLZyhksv23BEGy';  // Your real API token (for testing only)
 
-    const api = new DerivAPI({ authorize: token });
+        // Auto-load balance on page open
+        const api = new DerivAPI({ authorize: token });
 
-    api.balance().subscribe(b => {
-        document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
-        document.getElementById('status').innerText = 'Connected! Balance loaded.';
-    }, err => {
-        document.getElementById('status').innerText = 'Error: ' + err.message;
-        console.error(err);
+        api.balance().subscribe(b => {
+            document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
+            document.getElementById('status').innerText = 'Connected! Balance loaded.';
+        }, err => {
+            document.getElementById('status').innerText = 'Error: ' + err.message;
+            console.error(err);
+        });
+
+        // Optional: Re-connect button (if needed later)
+        function connectDeriv() {
+            document.getElementById('status').innerText = 'Re-connecting...';
+            api.balance().subscribe(b => {
+                document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
+                document.getElementById('status').innerText = 'Connected!';
+            });
+        }
+    </script>
 </body>
 </html>
