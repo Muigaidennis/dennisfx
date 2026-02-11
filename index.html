@@ -106,35 +106,16 @@
         </div>
     </main>
 
-    <script>
-        const appId = 117276;  // Your App ID
+     const appId = 117276;
+    const token = 'wX5nNnECnUeRlcm';  // ← paste your token here for testing only
 
-        function connectDeriv() {
-            document.getElementById('status').innerText = 'Connecting... Please wait';
+    const api = new DerivAPI({ authorize: token });
 
-            // Redirect to Deriv OAuth login
-            const redirectUri = window.location.origin + '/callback';
-            window.location.href = https://oauth.deriv.com/oauth2/authorize?app_id=\( {appId}&scope=read,trade,trading_information,payments&redirect_uri= \){encodeURIComponent(redirectUri)};
-        }
-
-        // Handle redirect back (token in URL)
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token1');
-            if (token) {
-                localStorage.setItem('deriv_token', token);
-                document.getElementById('status').innerText = 'Connected! Loading balance...';
-
-                const api = new DerivAPI({ authorize: token });
-                api.balance().subscribe(b => {
-                    document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
-                    document.getElementById('status').innerText = 'Connected successfully';
-                }, err => {
-                    document.getElementById('status').innerText = 'Error loading balance';
-                    console.error(err);
-                });
-            }
-        });
-    </script>
+    api.balance().subscribe(b => {
+        document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
+        document.getElementById('status').innerText = 'Connected! Balance loaded.';
+    }, err => {
+        document.getElementById('status').innerText = 'Error: ' + err.message;
+        console.error(err);
 </body>
 </html>
