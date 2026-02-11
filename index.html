@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dennis Deriv Trading</title>
+    <script src="https://cdn.jsdelivr.net/npm/@deriv/deriv-api/dist/deriv-api.min.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: Arial, sans-serif; 
+            background: #0f0f17; 
+            color: white; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        header { 
+            background: #1a1a2e; 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .logo { font-size: 24px; font-weight: bold; color: #ff4d4d; }
+        main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .card { 
+            background: #1e1e2f; 
+            padding: 40px; 
+            border-radius: 12px; 
+            text-align: center; 
+            max-width: 500px; 
+            width: 100%; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        h1 { color: #ff4d4d; margin-bottom: 20px; }
+        button { 
+            background: #ff4d4d; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin: 15px; 
+        }
+        button:hover { background: #e63939; }
+        #status { margin-top: 30px; font-size: 18px; }
+        #balance { font-size: 32px; color: #4caf50; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Dennis Deriv Trading</div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h1>Welcome to Dennis Deriv Trading</h1>
+            <p>Connect your Deriv account and start trading with free bots & signals</p>
+
+            <button onclick="connectDeriv()">Connect Deriv Account</button>
+            <a href="https://deriv.com/signup/?affiliate_token=YOUR_AFFILIATE_TOKEN">
+                <button>Sign Up New Deriv Account (Get Bonus)</button>
+            </a>
+
+            <div id="status">Status: Not connected</div>
+            <div id="balance">Balance: —</div>
+        </div>
+    </main>
+
+    <script>
+        const appId = 117276;  // Your existing App ID
+        let api = null;
+
+        function connectDeriv() {
+            document.getElementById('status').innerText = 'Connecting...';
+
+            api = new DerivAPI({ app_id: appId });
+
+            // This opens Deriv login in popup or redirect
+            window.location.href = https://oauth.deriv.com/oauth2/authorize?app_id=\( {appId}&scope=read,trade,trading_information,payments&redirect_uri= \){encodeURIComponent(window.location.origin + '/callback')};
+        }
+
+        // After redirect back (you'll add /callback later)
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token1');
+            if (token) {
+                api = new DerivAPI({ authorize: token });
+                api.balance().subscribe(b => {
+                    document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
+                    document.getElementById('status').innerText = 'Connected!';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
