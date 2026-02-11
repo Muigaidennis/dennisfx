@@ -99,38 +99,60 @@
             <p>Connect your Deriv account and start trading with free bots & signals</p>
 
             <button class="btn" onclick="connectDeriv()">Connect Deriv Account</button>
-            <a href="https://deriv.com/signup/?affiliate_token=YOUR_REAL_AFFILIATE_TOKEN_HERE" target="_blank" class="btn signup-btn">
+            <a href="https://deriv.com/signup/" target="_blank" class="btn signup-btn">
                 Sign Up New Deriv Account
             </a>
 
-            <div id="status">Status: Loading balance...</div>
+            <div id="status">Status: Not connected</div>
             <div id="balance">Balance: —</div>
         </div>
     </main>
 
     <script>
-        const appId = 126400;
-        const token = 'YeLZyhksv23BEGy';  // Your real API token (for testing only)
+        const appId = 126400;  // Your new App ID
 
-        // Auto-load balance on page open
-        const api = new DerivAPI({ authorize: token });
-
-        api.balance().subscribe(b => {
-            document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
-            document.getElementById('status').innerText = 'Connected! Balance loaded.';
-        }, err => {
-            document.getElementById('status').innerText = 'Error: ' + err.message;
-            console.error(err);
-        });
-
-        // Optional: Re-connect button (if needed later)
         function connectDeriv() {
-            document.getElementById('status').innerText = 'Re-connecting...';
-            api.balance().subscribe(b => {
-                document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
-                document.getElementById('status').innerText = 'Connected!';
-            });
+            document.getElementById('status').innerText = 'Redirecting to Deriv... Please wait';
+
+            const redirectUri = window.location.origin + '/callback';
+            const oauthUrl = https://oauth.deriv.com/oauth2/authorize?app_id=\( {appId}&scope=read,trade,trading_information,payments&redirect_uri= \){encodeURIComponent(redirectUri)};
+
+            window.location.href = oauthUrl;
         }
+
+        // Handle token from Deriv redirect
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token1');
+
+            if (token) {
+                localStorage.setItem('deriv_token', token);
+                document.getElementById('status').innerText = 'Connected! Loading balance...';
+
+                const api = new DerivAPI({ authorize: token });
+
+                api.balance().subscribe(b => {
+                    document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
+                    document.getElementById('status').innerText = 'Connected successfully - balance loaded!';
+                }, err => {
+                    document.getElementById('status').innerText = 'Error loading balance: ' + err.message;
+                    console.error(err);
+                });
+            } else {
+                // Check if we have saved token from previous connect
+                const savedToken = localStorage.getItem('deriv_token');
+                if (savedToken) {
+                    document.getElementById('status').innerText = 'Using saved connection... Loading balance...';
+                    const api = new DerivAPI({ authorize: savedToken });
+                    api.balance().subscribe(b => {
+                        document.getElementById('balance').innerText = Balance: ${b.balance} ${b.currency};
+                        document.getElementById('status').innerText = 'Connected (saved token)';
+                    }, err => {
+                        document.getElementById('status').innerText = 'Saved token invalid: ' + err.message;
+                    });
+                }
+            }
+        });
     </script>
 </body>
 </html>
