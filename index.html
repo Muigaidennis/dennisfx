@@ -601,10 +601,28 @@ function doLogout(){
   renderBots();toast('Logged out','info');
 }
 function chkOAuth(){
-  const p=new URLSearchParams(window.location.search),toks=[];
-  for(let i=1;p.get('token'+i);i++)toks.push({token:p.get('token'+i),loginid:p.get('loginid'+i)||''});
-  if(toks.length){window.history.replaceState({},document.title,window.location.pathname);localStorage.setItem(SESSION_KEY,JSON.stringify(toks));return toks;}
+  let toks = [];
+  // Try parsing from query string first
+  const searchParams = new URLSearchParams(window.location.search);
+  for(let i=1; searchParams.get("token"+i); i++) {
+    toks.push({token: searchParams.get("token"+i), loginid: searchParams.get("loginid"+i)||""});
+  }
+
+  // If no tokens found in query string, try parsing from hash
+  if (toks.length === 0 && window.location.hash) {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1)); // Remove '#' prefix
+    for(let i=1; hashParams.get("token"+i); i++) {
+      toks.push({token: hashParams.get("token"+i), loginid: hashParams.get("loginid"+i)||""});
+    }
+  }
+
+  if(toks.length){
+    window.history.replaceState({},document.title,window.location.pathname);
+    localStorage.setItem(SESSION_KEY,JSON.stringify(toks));
+    return toks;
+  }
   return null;
+  }
 }
 function chkSess(){try{const s=localStorage.getItem(SESSION_KEY);if(s){const t=JSON.parse(s);if(t&&t.length)return t;}}catch(e){}return null;}
 function conn(toks){_toks=toks;_ai=0;allAccts=[];startWS(toks[0].token);}
