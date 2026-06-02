@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ManooFX — Bot Manager</title>
+<link rel="stylesheet" href="shared.css"/>
+<script src="shared.js"></script>
+<style>
+  .bot-layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; }
+
+  .bot-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: border-color 0.15s;
+  }
+  .bot-card:hover { border-color: var(--border2); }
+  .bot-card.running { border-color: rgba(0,229,180,0.3); background: rgba(0,229,180,0.03); }
+  .bot-card.paused { border-color: rgba(255,170,0,0.3); }
+
+  .bot-header { display: flex; align-items: flex-start; justify-content: space-between; }
+  .bot-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; }
+  .bot-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+
+  .bot-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bot-stat { font-size: 0.68rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+  .bot-stat strong { color: var(--text); font-size: 0.78rem; }
+
+  .bot-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+  .bot-log {
+    background: var(--surface); border-radius: var(--radius-sm);
+    padding: 10px; font-size: 0.68rem; color: var(--muted);
+    max-height: 80px; overflow-y: auto; font-family: var(--font-mono);
+    line-height: 1.6;
+  }
+  .log-line { border-bottom: 1px solid var(--border); padding: 2px 0; }
+  .log-line:last-child { border: none; }
+  .log-buy { color: var(--accent); }
+  .log-sell { color: var(--danger); }
+  .log-info { color: var(--muted); }
+
+  /* Upload area */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: all 0.2s; color: var(--muted); font-size: 0.78rem;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); color: var(--accent); background: rgba(0,229,180,0.04); }
+  .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+
+  .xml-paste {
+    width: 100%; min-height: 120px; resize: vertical;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: var(--font-mono); font-size: 0.72rem;
+    padding: 10px; outline: none; line-height: 1.5;
+  }
+  .xml-paste:focus { border-color: var(--accent); }
+
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .progress-bar {
+    height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px;
+  }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+
+  .pnl-mini {
+    font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div id="navHolder"></div>
+<div class="mfx-layout">
+  <div id="sidebarHolder"></div>
+  <main class="mfx-main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Bot Manager</div>
+        <div class="page-sub">Upload, configure and run automated trading bots</div>
+      </div>
+      <button class="btn btn-primary" onclick="showAddBot()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Bot
+      </button>
+    </div>
+
+    <div class="bot-layout">
+      <!-- Bot list -->
+      <div>
+        <div id="botList" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+
+      <!-- Side panel -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Add/upload bot -->
+        <div class="mfx-card" id="addBotPanel">
+          <div class="mfx-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Add New Bot
+          </div>
+
+          <div>
+            <label class="field-label">Bot Name</label>
+            <input class="mfx-input" id="botName" placeholder="e.g. Even/Odd Strategy" />
+          </div>
+
+          <div style="margin-top:10px;">
+            <label class="field-label">Description</label>
+            <input class="mfx-input" id="botDesc" placeholder="Short description..." />
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="mfx-tabs" style="margin-bottom:10px;">
+              <button class="mfx-tab active" onclick="switchBotTab('upload',this)">Upload XML</button>
+              <button class="mfx-tab" onclick="switchBotTab('paste',this)">Paste XML</button>
+              <button class="mfx-tab" onclick="switchBotTab('preset',this)">Presets</button>
+            </div>
+
+            <div id="tabUpload">
+              <div class="upload-zone" id="uploadZone" onclick="document.getElementById('xmlFile').click()"
+                ondragover="event.preventDefault();this.classList.add('drag')"
+                ondragleave="this.classList.remove('drag')"
+                ondrop="handleFileDrop(event)">
+                <div class="upload-icon">📂</div>
+                <div>Drop XML file here or click to browse</div>
+                <div style="font-size:0.65rem;margin-top:4px;">Deriv Bot XML format</div>
+              </div>
+              <input type="file" id="xmlFile" accept=".xml" style="display:none" onchange="handleFileSelect(event)"/>
+            </div>
+
+            <div id="tabPaste" style="display:none;">
+              <textarea class="xml-paste" id="xmlPaste" placeholder="Paste your Deriv Bot XML here..."></textarea>
+            </div>
+
+            <div id="tabPreset" style="display:none;">
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div class="bot-card" style="cursor:pointer;" onclick="loadPreset('evenodd')">
+                  <div class="bot-name">Even/Odd Analyser</div>
+                  <div class="bot-desc">Trades based on digit even/odd patterns with configurable stake</div>
+                  <span class="tag tag-green">Built-in</span>
+                </div>
+                <div class="bot-card" style="cursor:pointer;" onclick="loadPreset('martingale')">
+                  <div class="bot-name">Martingale Rise/Fall</div>
+                  <div class="bot-desc">Doubles stake after loss on Rise/Fall contracts</div>
+                  <span class="tag tag-warn">⚠ High Risk</span>
+                </div>
+                <div class="bot-card" style="cursor:pointer;" onclick="loadPreset('dalembert')">
+                  <div class="bot-name">D'Alembert Strategy</div>
+                  <div class="bot-desc">+1 unit on loss, -1 unit on win — moderate risk</div>
+                  <span class="tag tag-blue">Moderate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <label class="field-label">Symbol</label>
+            <select class="mfx-select" id="botSymbol">
+              <option value="R_10">Volatility 10</option>
+              <option value="R_25">Volatility 25</option>
+              <option value="R_50" selected>Volatility 50</option>
+              <option value="R_75">Volatility 75</option>
+              <option value="R_100">Volatility 100</option>
+              <option value="1HZ10V">Vol 10 (1s)</option>
+              <option value="1HZ25V">Vol 25 (1s)</option>
+              <option value="1HZ50V">Vol 50 (1s)</option>
+              <option value="1HZ75V">Vol 75 (1s)</option>
+              <option value="1HZ100V">Vol 100 (1s)</option>
+            </select>
+          </div>
+
+          <div class="config-grid" style="margin-top:10px;">
+            <div>
+              <label class="field-label">Initial Stake</label>
+              <input class="mfx-input" type="number" id="botStake" value="0.35" min="0.35" step="0.01"/>
+            </div>
+            <div>
+              <label class="field-label">Take Profit</label>
+              <input class="mfx-input" type="number" id="botTP" value="10" min="0" step="0.5"/>
+            </div>
+            <div>
+              <label class="field-label">Stop Loss</label>
+              <input class="mfx-input" type="number" id="botSL" value="5" min="0" step="0.5"/>
+            </div>
+            <div>
+              <label class="field-label">Max Trades</label>
+              <input class="mfx-input" type="number" id="botMaxTrades" value="50" min="1"/>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="saveBot()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Bot
+          </button>
+        </div>
+
+        <!-- Running stats -->
+        <div class="mfx-card">
+          <div class="mfx-card-title">Session Stats</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><div class="stat-label">Total Trades</div><div class="stat-val" style="font-size:1.3rem;" id="sessTrades">0</div></div>
+            <div><div class="stat-label">Win Rate</div><div class="stat-val" style="font-size:1.3rem;" id="sessWinRate">—%</div></div>
+            <div><div class="stat-label">Net P&L</div><div class="pnl-mini" id="sessPnl">0.00</div></div>
+            <div><div class="stat-label">Active Bots</div><div class="stat-val" style="font-size:1.3rem;" id="sessActive">0</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const active = requireAuth();
+document.getElementById('navHolder').innerHTML = buildNav('bots');
+document.getElementById('sidebarHolder').innerHTML = buildSidebar('bots');
+
+const ws = new DerivWS();
+ws.connect(active.token);
+
+let bots = JSON.parse(localStorage.getItem('mfx_bots') || '[]');
+let botIntervals = {};
+let sessionStats = { trades: 0, wins: 0, pnl: 0 };
+
+ws.on('authorize', () => {
+  renderBots();
+  if (!bots.length) loadPresetSilent();
+});
+
+// ---- Presets ----
+const PRESETS = {
+  evenodd: {
+    name: 'Even/Odd Analyser',
+    desc: 'Analyses last 10 digits and trades even or odd based on frequency',
+    xml: '<strategy type="evenodd"/>',
+    strategy: 'evenodd'
+  },
+  martingale: {
+    name: 'Martingale Rise/Fall',
+    desc: 'Doubles stake after each loss on Rise/Fall',
+    xml: '<strategy type="martingale"/>',
+    strategy: 'martingale'
+  },
+  dalembert: {
+    name: "D'Alembert",
+    desc: '+1 unit on loss, -1 unit on win',
+    xml: '<strategy type="dalembert"/>',
+    strategy: 'dalembert'
+  }
+};
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  document.getElementById('botName').value = p.name;
+  document.getElementById('botDesc').value = p.desc;
+  switchBotTab('preset', null);
+  toast('Preset loaded: ' + p.name, 'info');
+}
+
+function loadPresetSilent() {
+  bots = [{
+    id: 'bot_default',
+    name: 'Even/Odd Analyser',
+    desc: 'Pre-loaded: Trades based on even/odd digit frequency',
+    symbol: 'R_50',
+    stake: 0.35,
+    tp: 10, sl: 5, maxTrades: 50,
+    strategy: 'evenodd',
+    status: 'stopped',
+    trades: 0, wins: 0, pnl: 0,
+    log: []
+  }];
+  saveBots();
+  renderBots();
+}
+
+function saveBots() {
+  localStorage.setItem('mfx_bots', JSON.stringify(bots));
+}
+
+// ---- Save bot ----
+function saveBot() {
+  const name = document.getElementById('botName').value.trim();
+  if (!name) { toast('Enter a bot name', 'error'); return; }
+  const xmlPaste = document.getElementById('xmlPaste').value.trim();
+  const bot = {
+    id: 'bot_' + Date.now(),
+    name,
+    desc: document.getElementById('botDesc').value,
+    symbol: document.getElementById('botSymbol').value,
+    stake: parseFloat(document.getElementById('botStake').value) || 0.35,
+    tp: parseFloat(document.getElementById('botTP').value) || 10,
+    sl: parseFloat(document.getElementById('botSL').value) || 5,
+    maxTrades: parseInt(document.getElementById('botMaxTrades').value) || 50,
+    xml: xmlPaste || null,
+    strategy: xmlPaste ? 'custom' : 'evenodd',
+    status: 'stopped',
+    trades: 0, wins: 0, pnl: 0,
+    log: []
+  };
+  bots.push(bot);
+  saveBots();
+  renderBots();
+  toast('Bot saved: ' + name, 'success');
+  document.getElementById('botName').value = '';
+  document.getElementById('botDesc').value = '';
+  document.getElementById('xmlPaste').value = '';
+}
+
+// ---- Render ----
+function renderBots() {
+  const list = document.getElementById('botList');
+  if (!bots.length) {
+    list.innerHTML = '<div class="mfx-loader">No bots yet. Add one from the panel →</div>';
+    return;
+  }
+  list.innerHTML = bots.map(b => {
+    const isRunning = b.status === 'running';
+    const winRate = b.trades ? (b.wins / b.trades * 100).toFixed(1) : '—';
+    const progress = b.maxTrades ? Math.min(100, (b.trades / b.maxTrades * 100)) : 0;
+    return `
+    <div class="bot-card ${isRunning?'running':b.status==='paused'?'paused':''}" id="botcard_${b.id}">
+      <div class="bot-header">
+        <div>
+          <div class="bot-name">${b.name}</div>
+          <div class="bot-desc">${b.desc || ''}</div>
+        </div>
+        <span class="tag ${isRunning?'tag-green':b.status==='paused'?'tag-warn':'tag-blue'}">
+          ${isRunning?'● Running':b.status==='paused'?'⏸ Paused':'● Idle'}
+        </span>
+      </div>
+      <div class="bot-meta">
+        <div class="bot-stat"><span>Symbol</span><strong>${b.symbol}</strong></div>
+        <div class="bot-stat"><span>Stake</span><strong>${fmt(b.stake)}</strong></div>
+        <div class="bot-stat"><span>Trades</span><strong>${b.trades}/${b.maxTrades}</strong></div>
+        <div class="bot-stat"><span>Win Rate</span><strong>${winRate}%</strong></div>
+        <div class="bot-stat"><span>P&L</span><strong class="${b.pnl>=0?'up':'dn'}">${b.pnl>=0?'+':''}${fmt(b.pnl)}</strong></div>
+        <div class="bot-stat"><span>TP/SL</span><strong>${fmt(b.tp)} / ${fmt(b.sl)}</strong></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+      <div class="bot-log" id="log_${b.id}">
+        ${b.log.slice(-5).map(l=>`<div class="log-line log-${l.type}">${l.text}</div>`).join('') || '<span>No activity yet</span>'}
+      </div>
+      <div class="bot-actions">
+        ${!isRunning ? `<button class="btn btn-primary" style="padding:7px 16px;" onclick="startBot('${b.id}')">▶ Start</button>` : ''}
+        ${isRunning ? `<button class="btn btn-secondary" style="padding:7px 16px;" onclick="pauseBot('${b.id}')">⏸ Pause</button>` : ''}
+        ${isRunning ? `<button class="btn btn-danger" style="padding:7px 16px;" onclick="stopBot('${b.id}')">■ Stop</button>` : ''}
+        ${!isRunning ? `<button class="btn btn-secondary" style="padding:7px 16px;" onclick="resetBot('${b.id}')">↺ Reset</button>` : ''}
+        <button class="btn btn-danger" style="padding:7px 12px;margin-left:auto;" onclick="deleteBot('${b.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Update session stats
+  const active_bots = bots.filter(b => b.status === 'running').length;
+  document.getElementById('sessActive').textContent = active_bots;
+  const total = bots.reduce((s,b)=>s+b.trades,0);
+  const wins = bots.reduce((s,b)=>s+b.wins,0);
+  const pnl = bots.reduce((s,b)=>s+b.pnl,0);
+  document.getElementById('sessTrades').textContent = total;
+  document.getElementById('sessWinRate').textContent = total ? (wins/total*100).toFixed(1)+'%' : '—%';
+  const pnlEl = document.getElementById('sessPnl');
+  pnlEl.textContent = (pnl>=0?'+':'') + fmt(pnl);
+  pnlEl.className = 'pnl-mini ' + (pnl>=0?'up':'dn');
+}
+
+// ---- Bot logic ----
+function addLog(bot, type, text) {
+  bot.log.push({ type, text: `[${new Date().toLocaleTimeString()}] ${text}` });
+  if (bot.log.length > 30) bot.log.shift();
+  const logEl = document.getElementById('log_' + bot.id);
+  if (logEl) logEl.innerHTML = bot.log.slice(-5).map(l=>`<div class="log-line log-${l.type}">${l.text}</div>`).join('');
+}
+
+async function startBot(id) {
+  const bot = bots.find(b => b.id === id);
+  if (!bot) return;
+  if (bot.pnl <= -bot.sl) { toast('Bot hit stop loss, reset first', 'error'); return; }
+  if (bot.pnl >= bot.tp) { toast('Bot hit take profit, reset first', 'info'); return; }
+  bot.status = 'running';
+  saveBots(); renderBots();
+  addLog(bot, 'info', `Started on ${bot.symbol} — stake: ${fmt(bot.stake)}`);
+  runBotCycle(bot);
+}
+
+async function runBotCycle(bot) {
+  if (bot.status !== 'running') return;
+  if (bot.trades >= bot.maxTrades) { stopBot(bot.id); addLog(bot, 'info', 'Max trades reached'); return; }
+  if (bot.pnl <= -bot.sl) { stopBot(bot.id); addLog(bot, 'sell', `Stop loss hit: ${fmt(bot.pnl)}`); return; }
+  if (bot.pnl >= bot.tp) { stopBot(bot.id); addLog(bot, 'buy', `Take profit hit: +${fmt(bot.pnl)}`); return; }
+
+  let contractType = 'CALL';
+  let stake = bot.stake;
+
+  // Strategy logic
+  if (bot.strategy === 'evenodd') {
+    // Simple even/odd based on last digit of current tick
+    try {
+      const hist = await ws.send({ ticks_history: bot.symbol, count: 10, end: 'latest' });
+      const prices = hist.history?.prices || [];
+      if (prices.length) {
+        const lastPrice = prices[prices.length - 1].toString();
+        const lastDigit = parseInt(lastPrice[lastPrice.length - 1]);
+        const evens = prices.filter(p => parseInt(p.toString().slice(-1)) % 2 === 0).length;
+        contractType = evens >= 5 ? 'DIGITODD' : 'DIGITEVEN';
+      }
+    } catch(e) {}
+  } else if (bot.strategy === 'martingale') {
+    contractType = 'CALL';
+    const lastTrade = bot.log.slice(-1)[0];
+    if (lastTrade && lastTrade.type === 'sell') {
+      stake = Math.min(bot.stake * Math.pow(2, bot.consecutiveLosses || 0), 50);
+    }
+  } else if (bot.strategy === 'dalembert') {
+    contractType = Math.random() > 0.5 ? 'CALL' : 'PUT';
+    stake = Math.max(0.35, bot.stake + (bot.consecutiveLosses || 0) * 0.35);
+  } else {
+    contractType = Math.random() > 0.5 ? 'CALL' : 'PUT';
+  }
+
+  try {
+    const propReq = {
+      proposal: 1, amount: stake, basis: 'stake',
+      contract_type: contractType,
+      currency: active.currency || 'USD',
+      duration: 5, duration_unit: 't', symbol: bot.symbol
+    };
+    const prop = await ws.send(propReq);
+    if (prop.error) { addLog(bot, 'info', 'Proposal error: ' + prop.error.message); setTimeout(()=>runBotCycle(bot), 3000); return; }
+
+    const buy = await ws.send({ buy: prop.proposal.id, price: prop.proposal.ask_price });
+    if (buy.error) { addLog(bot, 'info', 'Buy error: ' + buy.error.message); setTimeout(()=>runBotCycle(bot), 3000); return; }
+
+    const contractId = buy.buy.contract_id;
+    addLog(bot, 'buy', `#${contractId} ${contractType} stake:${fmt(stake)}`);
+    bot.trades++;
+
+    // Wait for contract to complete
+    await waitForContract(bot, contractId, stake);
+  } catch(e) {
+    addLog(bot, 'info', 'Error: ' + (e.message||e.code||'unknown'));
+    setTimeout(() => runBotCycle(bot), 3000);
+  }
+}
+
+function waitForContract(bot, contractId, stake) {
+  return new Promise((resolve) => {
+    let subId = null;
+    const handler = (d) => {
+      const c = d.proposal_open_contract;
+      if (!c || c.contract_id !== contractId) return;
+      if (c.is_expired || c.is_sold) {
+        ws.off('proposal_open_contract', handler);
+        const profit = c.profit || 0;
+        bot.pnl = parseFloat((bot.pnl + profit).toFixed(2));
+        if (profit > 0) { bot.wins++; bot.consecutiveLosses = 0; addLog(bot, 'buy', `✓ Win +${fmt(profit)}`); }
+        else { bot.consecutiveLosses = (bot.consecutiveLosses||0)+1; addLog(bot, 'sell', `✗ Loss ${fmt(profit)}`); }
+        saveBots(); renderBots();
+        setTimeout(() => runBotCycle(bot), 1500);
+        resolve();
+      }
+    };
+    ws.on('proposal_open_contract', handler);
+    ws.subscribe({ proposal_open_contract: 1, contract_id: contractId }, ()=>{});
+  });
+}
+
+function pauseBot(id) {
+  const bot = bots.find(b => b.id === id);
+  if (bot) { bot.status = 'paused'; saveBots(); renderBots(); addLog(bot, 'info', 'Paused'); }
+}
+
+function stopBot(id) {
+  const bot = bots.find(b => b.id === id);
+  if (bot) { bot.status = 'stopped'; saveBots(); renderBots(); addLog(bot, 'info', 'Stopped'); }
+}
+
+function resetBot(id) {
+  const bot = bots.find(b => b.id === id);
+  if (bot) {
+    bot.status = 'stopped'; bot.trades = 0; bot.wins = 0;
+    bot.pnl = 0; bot.log = []; bot.consecutiveLosses = 0;
+    saveBots(); renderBots(); toast('Bot reset', 'info');
+  }
+}
+
+function deleteBot(id) {
+  if (!confirm('Delete this bot?')) return;
+  bots = bots.filter(b => b.id !== id);
+  saveBots(); renderBots();
+}
+
+// ---- File handling ----
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('xmlPaste').value = ev.target.result;
+    switchBotTab('paste', null);
+    toast('XML loaded from file', 'success');
+  };
+  reader.readAsText(file);
+}
+
+function handleFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('xmlPaste').value = ev.target.result;
+    switchBotTab('paste', null);
+    toast('XML loaded', 'success');
+  };
+  reader.readAsText(file);
+}
+
+// ---- Tabs ----
+function switchBotTab(tab, btn) {
+  ['upload','paste','preset'].forEach(t => {
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.mfx-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function showAddBot() {
+  document.getElementById('addBotPanel').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('botName').focus();
+}
+</script>
+</body>
+</html>
