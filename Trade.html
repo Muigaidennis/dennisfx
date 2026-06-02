@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ManooFX — Trade</title>
+<link rel="stylesheet" href="shared.css"/>
+<script src="shared.js"></script>
+<style>
+  .trade-layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
+  .trade-panel { display: flex; flex-direction: column; gap: 16px; }
+  .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  #tradeChart { height: 300px; width: 100%; display: block; }
+
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .type-btn {
+    padding: 10px 8px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--muted); font-family: var(--font-mono);
+    font-size: 0.7rem; cursor: pointer; text-align: center;
+    transition: all 0.15s; letter-spacing: 0.04em;
+  }
+  .type-btn:hover { border-color: var(--border2); color: var(--text); }
+  .type-btn.active { border-color: var(--accent); background: rgba(0,229,180,0.08); color: var(--accent); }
+
+  .proposal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px;
+    font-size: 0.78rem;
+  }
+  .prop-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .prop-row:last-child { border-bottom: none; }
+  .prop-label { color: var(--muted); }
+  .prop-val { font-family: var(--font-display); font-weight: 600; }
+
+  .buy-btn {
+    width: 100%; padding: 16px; border: none; border-radius: var(--radius);
+    background: var(--accent); color: #000;
+    font-family: var(--font-display); font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em;
+  }
+  .buy-btn:hover { background: #00ffca; box-shadow: 0 6px 24px rgba(0,229,180,0.3); }
+  .buy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .put-btn {
+    background: var(--danger); color: #fff;
+  }
+  .put-btn:hover { background: #ff6080; box-shadow: 0 6px 24px rgba(255,64,96,0.3); }
+
+  .tick-scroll {
+    max-height: 100px; overflow-y: auto;
+    background: var(--surface); border-radius: var(--radius-sm);
+    padding: 8px;
+  }
+  .tick-line { font-size: 0.7rem; padding: 2px 0; display: flex; justify-content: space-between; }
+
+  .open-trades-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div id="navHolder"></div>
+<div class="mfx-layout">
+  <div id="sidebarHolder"></div>
+  <main class="mfx-main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Trade</div>
+        <div class="page-sub">Buy & sell Deriv contracts</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:0.72rem;color:var(--muted)">Balance:</span>
+        <span id="navBal" style="font-family:var(--font-display);font-weight:700;color:var(--accent)">—</span>
+        <div class="live-dot">Live</div>
+      </div>
+    </div>
+
+    <div class="trade-layout">
+      <!-- Trade form -->
+      <div class="trade-panel">
+        <div class="mfx-card">
+          <div class="mfx-card-title">Symbol</div>
+          <select class="mfx-select" id="symbol" onchange="onSymbolChange()">
+            <optgroup label="Standard Volatility">
+              <option value="R_10">Volatility 10</option>
+              <option value="R_25">Volatility 25</option>
+              <option value="R_50" selected>Volatility 50</option>
+              <option value="R_75">Volatility 75</option>
+              <option value="R_100">Volatility 100</option>
+            </optgroup>
+            <optgroup label="1-Second Volatility">
+              <option value="1HZ10V">Volatility 10 (1s)</option>
+              <option value="1HZ25V">Volatility 25 (1s)</option>
+              <option value="1HZ50V">Volatility 50 (1s)</option>
+              <option value="1HZ75V">Volatility 75 (1s)</option>
+              <option value="1HZ100V">Volatility 100 (1s)</option>
+            </optgroup>
+          </select>
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.72rem;color:var(--muted)">Current price</span>
+            <span id="livePrice" style="font-family:var(--font-display);font-size:1.3rem;font-weight:800">—</span>
+          </div>
+          <div class="tick-scroll" id="tickScroll" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="mfx-card">
+          <div class="mfx-card-title">Contract Type</div>
+          <div class="type-grid">
+            <button class="type-btn active" data-type="CALL" onclick="selectType('CALL',this)">Rise ▲</button>
+            <button class="type-btn" data-type="PUT" onclick="selectType('PUT',this)">Fall ▼</button>
+            <button class="type-btn" data-type="DIGITEVEN" onclick="selectType('DIGITEVEN',this)">Even</button>
+            <button class="type-btn" data-type="DIGITODD" onclick="selectType('DIGITODD',this)">Odd</button>
+            <button class="type-btn" data-type="DIGITOVER" onclick="selectType('DIGITOVER',this)">Over</button>
+            <button class="type-btn" data-type="DIGITUNDER" onclick="selectType('DIGITUNDER',this)">Under</button>
+            <button class="type-btn" data-type="DIGITMATCH" onclick="selectType('DIGITMATCH',this)">Match</button>
+            <button class="type-btn" data-type="DIGITDIFF" onclick="selectType('DIGITDIFF',this)">Differ</button>
+          </div>
+        </div>
+
+        <div class="mfx-card">
+          <div class="mfx-card-title">Parameters</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label class="field-label">Basis</label>
+              <select class="mfx-select" id="basis">
+                <option value="stake">Stake</option>
+                <option value="payout">Payout</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Amount (USD)</label>
+              <input class="mfx-input" type="number" id="amount" value="1" min="0.35" step="0.01" oninput="scheduleProposal()"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div>
+                <label class="field-label">Duration</label>
+                <input class="mfx-input" type="number" id="duration" value="5" min="1" oninput="scheduleProposal()"/>
+              </div>
+              <div>
+                <label class="field-label">Unit</label>
+                <select class="mfx-select" id="durUnit" onchange="scheduleProposal()">
+                  <option value="t">Ticks</option>
+                  <option value="s">Seconds</option>
+                  <option value="m">Minutes</option>
+                </select>
+              </div>
+            </div>
+            <div id="digitField" style="display:none;">
+              <label class="field-label">Digit (0–9)</label>
+              <input class="mfx-input" type="number" id="digitBarrier" value="5" min="0" max="9" oninput="scheduleProposal()"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="mfx-card">
+          <div class="mfx-card-title">Proposal</div>
+          <div id="proposalBox" class="proposal-box">
+            <div class="prop-row"><span class="prop-label">Ask Price</span><span class="prop-val" id="pAsk">—</span></div>
+            <div class="prop-row"><span class="prop-label">Payout</span><span class="prop-val" id="pPayout">—</span></div>
+            <div class="prop-row"><span class="prop-label">Profit</span><span class="prop-val up" id="pProfit">—</span></div>
+            <div class="prop-row"><span class="prop-label">Expiry</span><span class="prop-val" id="pExpiry">—</span></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="buy-btn" id="buyBtn" onclick="executeTrade()" disabled>
+            ▲ BUY CONTRACT
+          </button>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div>
+        <div class="chart-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div>
+              <span id="chartSymLabel" style="font-family:var(--font-display);font-weight:700;font-size:1rem;">Volatility 50</span>
+              <span style="font-size:0.7rem;color:var(--muted);margin-left:8px;">Live tick chart</span>
+            </div>
+            <div class="live-dot">Streaming</div>
+          </div>
+          <canvas id="tradeChart"></canvas>
+        </div>
+
+        <div class="open-trades-wrap">
+          <div class="mfx-card-title" style="margin-bottom:12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+            Open Contracts
+          </div>
+          <div id="openContracts"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const active = requireAuth();
+document.getElementById('navHolder').innerHTML = buildNav('trade');
+document.getElementById('sidebarHolder').innerHTML = buildSidebar('trade');
+
+const ws = new DerivWS();
+let selectedType = 'CALL';
+let proposalId = null;
+let proposalTimer = null;
+let chartPrices = [];
+let tickLines = [];
+
+ws.connect(active.token);
+ws.on('authorize', async () => {
+  // Balance
+  const bal = await ws.send({ balance: 1 });
+  document.getElementById('navBal').textContent = fmt(bal.balance.balance) + ' ' + bal.balance.currency;
+
+  // Subscribe balance
+  ws.subscribe({ balance: 1 }, d => {
+    if (d.balance) document.getElementById('navBal').textContent = fmt(d.balance.balance) + ' ' + d.balance.currency;
+  });
+
+  // Load open contracts
+  loadOpenContracts();
+
+  // Start tick stream
+  startTicks();
+  scheduleProposal();
+});
+
+function startTicks() {
+  const sym = document.getElementById('symbol').value;
+  document.getElementById('chartSymLabel').textContent = document.getElementById('symbol').selectedOptions[0].text;
+  ws.forgetAll('ticks');
+  chartPrices = [];
+  ws.subscribe({ ticks: sym }, d => {
+    if (!d.tick) return;
+    const price = d.tick.quote;
+    chartPrices.push({ price, time: d.tick.epoch });
+    if (chartPrices.length > 150) chartPrices.shift();
+    const el = document.getElementById('livePrice');
+    if (el) el.textContent = fmt(price, 4);
+    drawChart();
+    updateTickScroll(price, d.tick.epoch);
+  });
+}
+
+function updateTickScroll(price, epoch) {
+  tickLines.unshift({ price, time: new Date(epoch * 1000) });
+  if (tickLines.length > 20) tickLines.pop();
+  const el = document.getElementById('tickScroll');
+  if (!el) return;
+  el.innerHTML = tickLines.map((t, i) => {
+    const prev = tickLines[i+1];
+    const diff = prev ? t.price - prev.price : 0;
+    return `<div class="tick-line">
+      <span class="${diff >= 0 ? 'up' : 'dn'}">${fmt(t.price, 4)}</span>
+      <span style="color:var(--muted)">${t.time.toLocaleTimeString()}</span>
+    </div>`;
+  }).join('');
+}
+
+function drawChart() {
+  const canvas = document.getElementById('tradeChart');
+  const prices = chartPrices.map(p => p.price);
+  if (prices.length < 2) return;
+  const w = canvas.offsetWidth; const h = 300;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const min = Math.min(...prices) * 0.9999;
+  const max = Math.max(...prices) * 1.0001;
+  const range = max - min || 1;
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid lines
+  for (let i = 0; i <= 5; i++) {
+    const y = (i / 5) * h;
+    ctx.strokeStyle = '#1a2330'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    const label = fmt(max - (i / 5) * range, 4);
+    ctx.fillStyle = '#5a6a7a'; ctx.font = '10px DM Mono';
+    ctx.fillText(label, 4, y + 12);
+  }
+
+  const color = prices[prices.length-1] >= prices[0] ? '#00e5b4' : '#ff4060';
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.beginPath();
+  prices.forEach((p, i) => {
+    const x = (i / (prices.length - 1)) * w;
+    const y = h - ((p - min) / range) * (h - 20) - 5;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Fill
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, color + '25'); grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Last price dot
+  const lastX = w - 4;
+  const lastY = h - ((prices[prices.length-1] - min) / range) * (h - 20) - 5;
+  ctx.beginPath(); ctx.arc(lastX, lastY, 4, 0, Math.PI*2);
+  ctx.fillStyle = color; ctx.fill();
+}
+
+function selectType(type, btn) {
+  selectedType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const isDigit = ['DIGITMATCH','DIGITDIFF','DIGITOVER','DIGITUNDER'].includes(type);
+  document.getElementById('digitField').style.display = isDigit ? 'block' : 'none';
+  const isRiseFall = ['CALL','PUT'].includes(type);
+  const buyBtn = document.getElementById('buyBtn');
+  buyBtn.className = 'buy-btn' + (type === 'PUT' ? ' put-btn' : '');
+  buyBtn.textContent = type === 'PUT' ? '▼ SELL CONTRACT' : '▲ BUY CONTRACT';
+  scheduleProposal();
+}
+
+function scheduleProposal() {
+  clearTimeout(proposalTimer);
+  proposalTimer = setTimeout(fetchProposal, 600);
+}
+
+async function fetchProposal() {
+  const sym = document.getElementById('symbol').value;
+  const basis = document.getElementById('basis').value;
+  const amount = parseFloat(document.getElementById('amount').value) || 1;
+  const duration = parseInt(document.getElementById('duration').value) || 5;
+  const durUnit = document.getElementById('durUnit').value;
+  const digitBarrier = document.getElementById('digitBarrier').value;
+
+  const req = {
+    proposal: 1, amount, basis,
+    contract_type: selectedType,
+    currency: active.currency || 'USD',
+    duration, duration_unit: durUnit, symbol: sym
+  };
+  if (['DIGITMATCH','DIGITDIFF','DIGITOVER','DIGITUNDER'].includes(selectedType)) {
+    req.barrier = digitBarrier;
+  }
+
+  try {
+    const res = await ws.send(req);
+    if (res.error) {
+      document.getElementById('pAsk').textContent = 'Error';
+      toast(res.error.message, 'error');
+      document.getElementById('buyBtn').disabled = true;
+      return;
+    }
+    proposalId = res.proposal.id;
+    document.getElementById('pAsk').textContent = fmt(res.proposal.ask_price) + ' ' + (active.currency || 'USD');
+    document.getElementById('pPayout').textContent = fmt(res.proposal.payout) + ' ' + (active.currency || 'USD');
+    const profit = res.proposal.payout - res.proposal.ask_price;
+    document.getElementById('pProfit').textContent = '+' + fmt(profit) + ' (' + fmt((profit/res.proposal.ask_price)*100, 1) + '%)';
+    document.getElementById('pExpiry').textContent = duration + ' ' + ({t:'ticks',s:'seconds',m:'minutes'}[durUnit]);
+    document.getElementById('buyBtn').disabled = false;
+  } catch(e) {
+    document.getElementById('buyBtn').disabled = true;
+  }
+}
+
+async function executeTrade() {
+  if (!proposalId) { toast('Get a proposal first', 'error'); return; }
+  const buyBtn = document.getElementById('buyBtn');
+  buyBtn.disabled = true;
+  buyBtn.textContent = 'Processing...';
+  try {
+    const res = await ws.send({ buy: proposalId, price: 9999 });
+    if (res.error) { toast(res.error.message, 'error'); return; }
+    toast(`✓ Contract #${res.buy.contract_id} bought! Stake: ${fmt(res.buy.buy_price)}`, 'success', 5000);
+    loadOpenContracts();
+    scheduleProposal();
+  } catch(e) {
+    toast('Trade failed: ' + (e.message || e.code), 'error');
+  } finally {
+    buyBtn.disabled = false;
+    const isPut = selectedType === 'PUT';
+    buyBtn.textContent = isPut ? '▼ SELL CONTRACT' : '▲ BUY CONTRACT';
+  }
+}
+
+async function loadOpenContracts() {
+  try {
+    const res = await ws.send({ portfolio: 1 });
+    const contracts = res.portfolio?.contracts || [];
+    const el = document.getElementById('openContracts');
+    if (!contracts.length) {
+      el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.78rem;">No open contracts</div>';
+      return;
+    }
+    el.innerHTML = `<table class="mfx-table">
+      <thead><tr><th>Symbol</th><th>Type</th><th>Stake</th><th>Payout</th><th>Action</th></tr></thead>
+      <tbody>${contracts.map(c => `
+        <tr>
+          <td style="font-family:var(--font-display);font-weight:600">${c.symbol}</td>
+          <td><span class="tag tag-green">${c.contract_type}</span></td>
+          <td>${fmt(c.buy_price)}</td>
+          <td>${fmt(c.payout)}</td>
+          <td><button class="btn btn-danger" style="padding:4px 12px;" onclick="sellContract(${c.contract_id})">Sell</button></td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) {}
+}
+
+async function sellContract(id) {
+  try {
+    const res = await ws.send({ sell: id, price: 0 });
+    if (res.sell) { toast('Sold for ' + fmt(res.sell.sold_for), 'success'); loadOpenContracts(); }
+  } catch(e) { toast('Sell failed', 'error'); }
+}
+
+function onSymbolChange() { startTicks(); scheduleProposal(); }
+</script>
+</body>
+</html>
