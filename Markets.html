@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ManooFX — Live Markets</title>
+<link rel="stylesheet" href="shared.css"/>
+<script src="shared.js"></script>
+<style>
+  .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .market-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .market-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .market-card.selected { border-color: var(--accent); background: rgba(0,229,180,0.04); }
+  .market-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .market-card.selected::after { opacity: 1; }
+  .mc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .mc-name { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; }
+  .mc-sym { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+  .mc-price {
+    font-family: var(--font-display); font-size: 1.4rem; font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .mc-change { font-size: 0.72rem; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+  .mc-sparkline { height: 40px; width: 100%; margin-top: 10px; }
+
+  /* Detail panel */
+  .detail-panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    margin-top: 20px; display: none;
+  }
+  .detail-panel.open { display: block; }
+  .detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .detail-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; }
+  .detail-price { font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
+  #tickChart { height: 220px; width: 100%; }
+  .tick-table-wrap { max-height: 200px; overflow-y: auto; margin-top: 16px; }
+
+  .section-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .sec-tab {
+    padding: 6px 14px; border-radius: 100px; font-size: 0.7rem;
+    letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+    border: 1px solid var(--border); color: var(--muted); background: none;
+    font-family: var(--font-mono); transition: all 0.15s;
+  }
+  .sec-tab.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="navHolder"></div>
+<div class="mfx-layout">
+  <div id="sidebarHolder"></div>
+  <main class="mfx-main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Live Markets</div>
+        <div class="page-sub">Real-time Deriv Volatility Indices</div>
+      </div>
+      <div class="live-dot">Streaming</div>
+    </div>
+
+    <!-- Tabs for index groups -->
+    <div class="section-tabs">
+      <button class="sec-tab active" onclick="filterGroup('all',this)">All</button>
+      <button class="sec-tab" onclick="filterGroup('standard',this)">Standard</button>
+      <button class="sec-tab" onclick="filterGroup('1s',this)">1-Second</button>
+    </div>
+
+    <div class="market-grid" id="marketGrid">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-header">
+        <div>
+          <div class="detail-title" id="dtName">—</div>
+          <div style="font-size:0.72rem;color:var(--muted)" id="dtSym">—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="detail-price" id="dtPrice">—</div>
+          <div id="dtChange" style="font-size:0.8rem;margin-top:4px;">—</div>
+        </div>
+        <button class="btn btn-secondary" onclick="closeDetail()">✕ Close</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div class="mfx-card" style="padding:14px;">
+          <div class="stat-label">High (session)</div>
+          <div class="stat-val" style="font-size:1.2rem;margin-top:4px;" id="dtHigh">—</div>
+        </div>
+        <div class="mfx-card" style="padding:14px;">
+          <div class="stat-label">Low (session)</div>
+          <div class="stat-val" style="font-size:1.2rem;margin-top:4px;" id="dtLow">—</div>
+        </div>
+        <div class="mfx-card" style="padding:14px;">
+          <div class="stat-label">Pip Size</div>
+          <div class="stat-val" style="font-size:1.2rem;margin-top:4px;" id="dtPip">—</div>
+        </div>
+        <div class="mfx-card" style="padding:14px;">
+          <div class="stat-label">Tick Count</div>
+          <div class="stat-val" style="font-size:1.2rem;margin-top:4px;" id="dtCount">0</div>
+        </div>
+      </div>
+
+      <canvas id="tickChart"></canvas>
+
+      <div class="tick-table-wrap">
+        <table class="mfx-table">
+          <thead><tr><th>#</th><th>Price</th><th>Change</th><th>Time</th></tr></thead>
+          <tbody id="tickTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const active = requireAuth();
+document.getElementById('navHolder').innerHTML = buildNav('markets');
+document.getElementById('sidebarHolder').innerHTML = buildSidebar('markets');
+
+const SYMBOLS = [
+  { sym: 'R_10',     name: 'Volatility 10',      group: 'standard' },
+  { sym: 'R_25',     name: 'Volatility 25',      group: 'standard' },
+  { sym: 'R_50',     name: 'Volatility 50',      group: 'standard' },
+  { sym: 'R_75',     name: 'Volatility 75',      group: 'standard' },
+  { sym: 'R_100',    name: 'Volatility 100',     group: 'standard' },
+  { sym: '1HZ10V',   name: 'Volatility 10 (1s)', group: '1s' },
+  { sym: '1HZ25V',   name: 'Volatility 25 (1s)', group: '1s' },
+  { sym: '1HZ50V',   name: 'Volatility 50 (1s)', group: '1s' },
+  { sym: '1HZ75V',   name: 'Volatility 75 (1s)', group: '1s' },
+  { sym: '1HZ100V',  name: 'Volatility 100 (1s)',group: '1s' },
+];
+
+const state = {};
+SYMBOLS.forEach(s => { state[s.sym] = { prices: [], prevPrice: null, high: null, low: null, count: 0 }; });
+
+let selectedSym = null;
+let chartCtx = null;
+let tickRows = [];
+let currentGroup = 'all';
+
+// Build cards
+function buildCards() {
+  const grid = document.getElementById('marketGrid');
+  grid.innerHTML = SYMBOLS.filter(s => currentGroup === 'all' || s.group === currentGroup).map(s => `
+    <div class="market-card" id="card_${s.sym}" onclick="selectSymbol('${s.sym}','${s.name}')">
+      <div class="mc-header">
+        <div>
+          <div class="mc-name">${s.name}</div>
+          <div class="mc-sym">${s.sym}</div>
+        </div>
+        <span class="tag ${s.group==='1s'?'tag-blue':'tag-green'}">${s.group==='1s'?'1s':'Std'}</span>
+      </div>
+      <div class="mc-price" id="price_${s.sym}">—</div>
+      <div class="mc-change" id="chg_${s.sym}"><span style="color:var(--muted)">Connecting...</span></div>
+      <canvas class="mc-sparkline" id="spark_${s.sym}"></canvas>
+    </div>`).join('');
+}
+
+buildCards();
+
+const ws = new DerivWS();
+ws.connect(active.token);
+ws.on('authorize', () => {
+  SYMBOLS.forEach(s => {
+    ws.subscribe({ ticks: s.sym }, (d) => {
+      if (!d.tick) return;
+      const tick = d.tick;
+      const st = state[s.sym];
+      const prev = st.prevPrice;
+      st.prices.push(tick.quote);
+      if (st.prices.length > 60) st.prices.shift();
+      if (st.high === null || tick.quote > st.high) st.high = tick.quote;
+      if (st.low === null || tick.quote < st.low) st.low = tick.quote;
+      st.count++;
+
+      // Update card
+      const priceEl = document.getElementById('price_' + s.sym);
+      const chgEl = document.getElementById('chg_' + s.sym);
+      if (priceEl) {
+        priceEl.textContent = fmt(tick.quote, 3);
+        priceEl.style.color = prev === null ? 'var(--text)' : tick.quote > prev ? 'var(--accent)' : tick.quote < prev ? 'var(--danger)' : 'var(--text)';
+      }
+      if (chgEl && prev !== null) {
+        const diff = tick.quote - prev;
+        chgEl.innerHTML = `<span class="${diff>=0?'up':'dn'}">${diff>=0?'▲':'▼'} ${Math.abs(diff).toFixed(3)}</span>`;
+      }
+      st.prevPrice = tick.quote;
+      drawSparkline(s.sym);
+
+      // Update detail panel if selected
+      if (selectedSym === s.sym) updateDetail(tick, s.sym);
+    });
+  });
+});
+
+function drawSparkline(sym) {
+  const canvas = document.getElementById('spark_' + sym);
+  if (!canvas) return;
+  const prices = state[sym].prices;
+  if (prices.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.offsetWidth; const h = canvas.offsetHeight;
+  canvas.width = w; canvas.height = h;
+  const min = Math.min(...prices); const max = Math.max(...prices);
+  const range = max - min || 1;
+  ctx.clearRect(0, 0, w, h);
+  const last = prices[prices.length-1];
+  const first = prices[0];
+  const color = last >= first ? '#00e5b4' : '#ff4060';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  prices.forEach((p, i) => {
+    const x = (i / (prices.length - 1)) * w;
+    const y = h - ((p - min) / range) * h;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  // Fill gradient
+  ctx.lineTo(w, h); ctx.lineTo(0, h);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, color + '30');
+  grad.addColorStop(1, color + '00');
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+// Detail panel
+let detailCanvas = null;
+let detailPrices = [];
+let detailCount = 0;
+
+function selectSymbol(sym, name) {
+  selectedSym = sym;
+  document.querySelectorAll('.market-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card_' + sym)?.classList.add('selected');
+  const panel = document.getElementById('detailPanel');
+  panel.classList.add('open');
+  document.getElementById('dtName').textContent = name;
+  document.getElementById('dtSym').textContent = sym;
+  detailPrices = [...state[sym].prices];
+  tickRows = [];
+  document.getElementById('tickTableBody').innerHTML = '';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeDetail() {
+  selectedSym = null;
+  document.getElementById('detailPanel').classList.remove('open');
+  document.querySelectorAll('.market-card').forEach(c => c.classList.remove('selected'));
+}
+
+function updateDetail(tick, sym) {
+  const st = state[sym];
+  document.getElementById('dtPrice').textContent = fmt(tick.quote, 4);
+  document.getElementById('dtHigh').textContent = fmt(st.high, 4);
+  document.getElementById('dtLow').textContent = fmt(st.low, 4);
+  document.getElementById('dtPip').textContent = tick.pip_size || '—';
+  document.getElementById('dtCount').textContent = st.count;
+
+  detailPrices.push(tick.quote);
+  if (detailPrices.length > 100) detailPrices.shift();
+  drawDetailChart();
+
+  // Tick table
+  const tbody = document.getElementById('tickTableBody');
+  const prev = tickRows.length > 0 ? tickRows[0].quote : tick.quote;
+  const diff = tick.quote - prev;
+  tickRows.unshift({ quote: tick.quote, diff, time: new Date(tick.epoch * 1000) });
+  if (tickRows.length > 50) tickRows.pop();
+  tbody.innerHTML = tickRows.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${tickRows.length - i}</td>
+      <td style="font-family:var(--font-display);font-weight:600">${fmt(r.quote, 4)}</td>
+      <td class="${r.diff >= 0 ? 'up' : 'dn'}">${r.diff >= 0 ? '+' : ''}${r.diff.toFixed(4)}</td>
+      <td style="color:var(--muted);font-size:0.68rem">${r.time.toLocaleTimeString()}</td>
+    </tr>`).join('');
+}
+
+function drawDetailChart() {
+  const canvas = document.getElementById('tickChart');
+  const prices = detailPrices;
+  if (!prices.length) return;
+  const w = canvas.offsetWidth; const h = 220;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const min = Math.min(...prices); const max = Math.max(...prices);
+  const range = max - min || 0.001;
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid
+  ctx.strokeStyle = '#1a2330'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = (i / 4) * h;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    const price = max - (i / 4) * range;
+    ctx.fillStyle = '#5a6a7a'; ctx.font = '10px DM Mono';
+    ctx.fillText(fmt(price, 3), 4, y - 3);
+  }
+
+  // Line
+  const color = prices[prices.length-1] >= prices[0] ? '#00e5b4' : '#ff4060';
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.beginPath();
+  prices.forEach((p, i) => {
+    const x = (i / (prices.length - 1)) * w;
+    const y = h - ((p - min) / range) * (h - 20) - 10;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Last price line
+  const lastY = h - ((prices[prices.length-1] - min) / range) * (h - 20) - 10;
+  ctx.strokeStyle = color + '60'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(0, lastY); ctx.lineTo(w, lastY); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function filterGroup(g, btn) {
+  currentGroup = g;
+  document.querySelectorAll('.sec-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildCards();
+}
+</script>
+</body>
+</html>
