@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ManooFX — Connecting...</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#080c10;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;--danger:#ff4060;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
+  .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);}
+  .logo span{color:var(--accent);}
+  .spinner{width:40px;height:40px;border:2px solid var(--muted);border-top-color:var(--accent);
+    border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .msg{font-size:0.78rem;color:var(--muted);letter-spacing:0.08em;}
+  .err{color:var(--danger);font-size:0.8rem;text-align:center;max-width:300px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="logo">Manoo<span>FX</span></div>
+<div class="spinner" id="spinner"></div>
+<div class="msg" id="msg">Authenticating with Deriv...</div>
+<div class="err" id="err" style="display:none"></div>
+
+<script>
+(function(){
+  const params = new URLSearchParams(window.location.search);
+
+  // Deriv returns: acct1=..., token1=..., cur1=..., acct2=..., token2=..., etc.
+  const accounts = [];
+  let i = 1;
+  while(params.get('acct'+i)){
+    accounts.push({
+      account: params.get('acct'+i),
+      token:   params.get('token'+i),
+      currency:params.get('cur'+i)
+    });
+    i++;
+  }
+
+  if(accounts.length === 0){
+    document.getElementById('spinner').style.display='none';
+    document.getElementById('msg').style.display='none';
+    document.getElementById('err').style.display='block';
+    document.getElementById('err').textContent='Authentication failed. No accounts received. Please try again.';
+    setTimeout(()=>location.href='index.html',3000);
+    return;
+  }
+
+  // Store accounts
+  localStorage.setItem('mfx_accounts', JSON.stringify(accounts));
+
+  // Set active account (prefer demo first for safety, user can switch)
+  const demo = accounts.find(a=>a.account.startsWith('VRTC'));
+  const active = demo || accounts[0];
+  localStorage.setItem('mfx_active', JSON.stringify(active));
+
+  // Admin: first ever login ID
+  if(!localStorage.getItem('mfx_admin_id')){
+    localStorage.setItem('mfx_admin_id', accounts[0].account);
+  }
+
+  document.getElementById('msg').textContent = `Welcome! Loading dashboard...`;
+  setTimeout(()=>location.href='dashboard.html',1200);
+})();
+</script>
+</body>
+</html>
