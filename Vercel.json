@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/trade", "destination": "/trade.html" },
+    { "source": "/markets", "destination": "/markets.html" },
+    { "source": "/analysis", "destination": "/analysis.html" },
+    { "source": "/analytics", "destination": "/analytics.html" },
+    { "source": "/bots", "destination": "/bots.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/callback", "destination": "/callback.html" }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
