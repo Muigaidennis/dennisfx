@@ -1,71 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>ManooFX — Connecting...</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
 <style>
-  :root{--bg:#080c10;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;--danger:#ff4060;}
+  :root{--bg:#080c10;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;--danger:#ff4060;--card:#111820;--border:#1a2330;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;
-    min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
-  .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:24px;}
+  .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;}
   .logo span{color:var(--accent);}
-  .spinner{width:40px;height:40px;border:2px solid var(--muted);border-top-color:var(--accent);
-    border-radius:50%;animation:spin 0.8s linear infinite;}
+  .spinner{width:40px;height:40px;border:2px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  .msg{font-size:0.78rem;color:var(--muted);letter-spacing:0.08em;}
-  .err{color:var(--danger);font-size:0.8rem;text-align:center;max-width:300px;line-height:1.6;}
+  .msg{font-size:0.78rem;color:var(--muted);letter-spacing:0.08em;text-align:center;}
+  .err{color:var(--danger);font-size:0.8rem;text-align:center;max-width:340px;line-height:1.7;background:rgba(255,64,96,0.06);border:1px solid rgba(255,64,96,0.2);border-radius:12px;padding:16px;display:none;}
+  .steps{font-size:0.68rem;color:var(--muted);text-align:center;max-width:280px;line-height:2;}
+  .step{padding:4px 0;}
+  .step.done{color:var(--accent);}
+  .step.active{color:var(--text);}
 </style>
 </head>
 <body>
 <div class="logo">Manoo<span>FX</span></div>
 <div class="spinner" id="spinner"></div>
 <div class="msg" id="msg">Authenticating with Deriv...</div>
-<div class="err" id="err" style="display:none"></div>
+<div class="steps">
+  <div class="step" id="s1">① Receiving auth code</div>
+  <div class="step" id="s2">② Exchanging for token</div>
+  <div class="step" id="s3">③ Loading accounts</div>
+  <div class="step" id="s4">④ Redirecting to dashboard</div>
+</div>
+<div class="err" id="errBox"></div>
 
 <script>
-(function(){
-  const params = new URLSearchParams(window.location.search);
+const CLIENT_ID  = 'app33scAN1TBU9sHqZPKckm9';
+const APP_ID     = '33scAN1TBU9sHqZPKckm9';
+const REDIRECT   = 'https://dennisfx-82td.vercel.app/callback.html';
+const TOKEN_URL  = 'https://auth.deriv.com/oauth2/token';
 
-  // Deriv returns: acct1=..., token1=..., cur1=..., acct2=..., token2=..., etc.
-  const accounts = [];
-  let i = 1;
-  while(params.get('acct'+i)){
-    accounts.push({
-      account: params.get('acct'+i),
-      token:   params.get('token'+i),
-      currency:params.get('cur'+i)
-    });
-    i++;
+function step(n, label) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('s' + i);
+    if (i < n) el.className = 'step done';
+    else if (i === n) { el.className = 'step active'; el.textContent = '→ ' + el.textContent.slice(2); }
   }
+  document.getElementById('msg').textContent = label;
+}
 
-  if(accounts.length === 0){
-    document.getElementById('spinner').style.display='none';
-    document.getElementById('msg').style.display='none';
-    document.getElementById('err').style.display='block';
-    document.getElementById('err').textContent='Authentication failed. No accounts received. Please try again.';
-    setTimeout(()=>location.href='index.html',3000);
+function showError(msg) {
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('msg').style.display = 'none';
+  const errBox = document.getElementById('errBox');
+  errBox.style.display = 'block';
+  errBox.innerHTML = `<strong>Login Failed</strong><br><br>${msg}<br><br><a href="index.html" style="color:var(--accent);">← Try Again</a>`;
+}
+
+async function handleCallback() {
+  const params  = new URLSearchParams(window.location.search);
+  const code    = params.get('code');
+  const state   = params.get('state');
+  const error   = params.get('error');
+
+  // Handle errors from Deriv
+  if (error) {
+    showError('Deriv returned: ' + (params.get('error_description') || error));
     return;
   }
 
-  // Store accounts
+  // Step 1 — got code
+  if (!code) {
+    // Maybe legacy OAuth — check for acct/token params
+    let i = 1;
+    const accounts = [];
+    while (params.get('acct' + i)) {
+      accounts.push({
+        account:  params.get('acct' + i),
+        token:    params.get('token' + i),
+        currency: params.get('cur' + i)
+      });
+      i++;
+    }
+    if (accounts.length > 0) {
+      // Legacy OAuth worked — save and redirect
+      step(3, 'Loading accounts...');
+      saveAndRedirect(accounts);
+      return;
+    }
+    showError('No authorization code received. Please try logging in again.');
+    return;
+  }
+
+  step(1, 'Received auth code...');
+
+  // Verify state
+  const savedState = sessionStorage.getItem('oauth_state');
+  if (savedState && state !== savedState) {
+    showError('Security check failed (state mismatch). Please try again.');
+    return;
+  }
+
+  // Step 2 — exchange code for token
+  step(2, 'Exchanging code for token...');
+  const codeVerifier = sessionStorage.getItem('pkce_verifier');
+
+  try {
+    const tokenRes = await fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type:    'authorization_code',
+        client_id:     CLIENT_ID,
+        code:          code,
+        redirect_uri:  REDIRECT,
+        code_verifier: codeVerifier || ''
+      })
+    });
+
+    const tokenData = await tokenRes.json();
+
+    if (!tokenRes.ok || tokenData.error) {
+      showError('Token exchange failed: ' + (tokenData.error_description || tokenData.error || 'Unknown error'));
+      return;
+    }
+
+    // Step 3 — get accounts using the access token
+    step(3, 'Loading your accounts...');
+
+    const accessToken = tokenData.access_token;
+
+    // Fetch accounts from Deriv REST API
+    const acctRes = await fetch('https://api.deriv.com/trading/v1/options/accounts', {
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Deriv-App-ID': APP_ID
+      }
+    });
+
+    let accounts = [];
+
+    if (acctRes.ok) {
+      const acctData = await acctRes.json();
+      accounts = (acctData.accounts || []).map(a => ({
+        account:      a.loginid || a.account_id,
+        token:        accessToken,
+        currency:     a.currency,
+        account_type: a.account_type
+      }));
+    }
+
+    // Fallback: use access_token directly as single account
+    if (!accounts.length) {
+      accounts = [{
+        account:  tokenData.loginid || 'unknown',
+        token:    accessToken,
+        currency: tokenData.currency || 'USD'
+      }];
+    }
+
+    saveAndRedirect(accounts, accessToken);
+
+  } catch(e) {
+    showError('Network error during login: ' + e.message + '<br>Please check your connection and try again.');
+  }
+}
+
+function saveAndRedirect(accounts, accessToken) {
+  step(4, 'Almost there...');
+
+  // Save all accounts
   localStorage.setItem('mfx_accounts', JSON.stringify(accounts));
 
-  // Set active account (prefer demo first for safety, user can switch)
-  const demo = accounts.find(a=>a.account.startsWith('VRTC'));
+  // Set active account — prefer demo first
+  const demo = accounts.find(a => a.account && a.account.startsWith('VRTC'));
   const active = demo || accounts[0];
   localStorage.setItem('mfx_active', JSON.stringify(active));
 
-  // Admin: first ever login ID
-  if(!localStorage.getItem('mfx_admin_id')){
+  // Save access token separately if available
+  if (accessToken) {
+    localStorage.setItem('mfx_access_token', accessToken);
+  }
+
+  // Set admin ID on first ever login
+  if (!localStorage.getItem('mfx_admin_id')) {
     localStorage.setItem('mfx_admin_id', accounts[0].account);
   }
 
-  document.getElementById('msg').textContent = `Welcome! Loading dashboard...`;
-  setTimeout(()=>location.href='dashboard.html',1200);
-})();
+  // Clear PKCE session data
+  sessionStorage.removeItem('pkce_verifier');
+  sessionStorage.removeItem('oauth_state');
+
+  document.getElementById('msg').textContent = 'Welcome! Loading dashboard...';
+  setTimeout(() => location.href = 'dashboard.html', 1000);
+}
+
+handleCallback();
 </script>
 </body>
 </html>
