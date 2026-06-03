@@ -7,225 +7,46 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg: #080c10;
-    --surface: #0e1318;
-    --border: #1a2330;
-    --accent: #00e5b4;
-    --accent2: #0077ff;
-    --danger: #ff4060;
-    --text: #e8edf2;
-    --muted: #5a6a7a;
-    --card: #111820;
-  }
+  :root{--bg:#080c10;--surface:#0e1318;--border:#1a2330;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;--card:#111820;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'DM Mono',monospace;
-    min-height:100vh;
-    overflow-x:hidden;
-  }
-
-  /* Animated grid background */
-  .grid-bg{
-    position:fixed;inset:0;
-    background-image:
-      linear-gradient(rgba(0,229,180,0.03) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(0,229,180,0.03) 1px,transparent 1px);
-    background-size:48px 48px;
-    animation:gridMove 20s linear infinite;
-    pointer-events:none;
-    z-index:0;
-  }
-  @keyframes gridMove{
-    0%{background-position:0 0;}
-    100%{background-position:48px 48px;}
-  }
-
-  .glow-orb{
-    position:fixed;
-    width:600px;height:600px;
-    border-radius:50%;
-    filter:blur(120px);
-    pointer-events:none;
-    z-index:0;
-  }
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,180,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,180,0.03) 1px,transparent 1px);background-size:48px 48px;animation:gridMove 20s linear infinite;pointer-events:none;z-index:0;}
+  @keyframes gridMove{0%{background-position:0 0;}100%{background-position:48px 48px;}}
+  .glow-orb{position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
   .orb1{background:rgba(0,229,180,0.06);top:-200px;left:-100px;}
   .orb2{background:rgba(0,119,255,0.05);bottom:-200px;right:-100px;}
-
-  /* NAV */
-  nav{
-    position:relative;z-index:10;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:20px 40px;
-    border-bottom:1px solid var(--border);
-    background:rgba(8,12,16,0.8);
-    backdrop-filter:blur(20px);
-  }
-  .logo{
-    font-family:'Syne',sans-serif;
-    font-size:1.5rem;font-weight:800;
-    letter-spacing:-0.02em;
-    color:var(--text);
-  }
+  nav{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:20px 40px;border-bottom:1px solid var(--border);background:rgba(8,12,16,0.8);backdrop-filter:blur(20px);}
+  .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);}
   .logo span{color:var(--accent);}
-  .nav-tag{
-    font-size:0.65rem;
-    color:var(--muted);
-    letter-spacing:0.15em;
-    text-transform:uppercase;
-  }
-
-  /* HERO */
-  .hero{
-    position:relative;z-index:1;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    min-height:calc(100vh - 70px);
-    padding:60px 24px;
-    text-align:center;
-  }
-  .hero-badge{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(0,229,180,0.08);
-    border:1px solid rgba(0,229,180,0.2);
-    border-radius:100px;
-    padding:6px 16px;
-    font-size:0.7rem;
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    color:var(--accent);
-    margin-bottom:32px;
-    animation:fadeUp 0.6s ease both;
-  }
+  .nav-tag{font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;}
+  .hero{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 70px);padding:60px 24px;text-align:center;}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,180,0.08);border:1px solid rgba(0,229,180,0.2);border-radius:100px;padding:6px 16px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:32px;}
   .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-
-  h1{
-    font-family:'Syne',sans-serif;
-    font-size:clamp(2.8rem,8vw,5.5rem);
-    font-weight:800;
-    line-height:1.05;
-    letter-spacing:-0.03em;
-    margin-bottom:24px;
-    animation:fadeUp 0.6s 0.1s ease both;
-  }
+  h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,8vw,5.5rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:24px;}
   h1 .line2{color:var(--accent);}
-
-  .hero-sub{
-    font-size:0.95rem;
-    color:var(--muted);
-    max-width:480px;
-    line-height:1.7;
-    margin-bottom:48px;
-    animation:fadeUp 0.6s 0.2s ease both;
-  }
-
-  .login-card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:20px;
-    padding:40px;
-    width:100%;max-width:420px;
-    animation:fadeUp 0.6s 0.3s ease both;
-    position:relative;
-    overflow:hidden;
-  }
-  .login-card::before{
-    content:'';
-    position:absolute;top:0;left:0;right:0;height:1px;
-    background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  }
-  .login-card h2{
-    font-family:'Syne',sans-serif;
-    font-size:1.3rem;font-weight:700;
-    margin-bottom:8px;
-  }
-  .login-card p{
-    font-size:0.78rem;color:var(--muted);
-    margin-bottom:28px;line-height:1.6;
-  }
-
-  .btn-deriv{
-    display:flex;align-items:center;justify-content:center;gap:12px;
-    width:100%;
-    padding:16px 24px;
-    background:var(--accent);
-    color:#000;
-    border:none;border-radius:12px;
-    font-family:'Syne',sans-serif;
-    font-size:0.95rem;font-weight:700;
-    cursor:pointer;
-    text-decoration:none;
-    transition:all 0.2s;
-    letter-spacing:0.02em;
-  }
-  .btn-deriv:hover{
-    background:#00ffca;
-    transform:translateY(-1px);
-    box-shadow:0 8px 32px rgba(0,229,180,0.3);
-  }
-  .btn-deriv svg{width:20px;height:20px;}
-
-  .divider{
-    display:flex;align-items:center;gap:12px;
-    margin:20px 0;
-    color:var(--muted);font-size:0.7rem;
-  }
-  .divider::before,.divider::after{
-    content:'';flex:1;height:1px;background:var(--border);
-  }
-
-  .features-row{
-    display:flex;gap:12px;
-    flex-wrap:wrap;justify-content:center;
-    margin-top:12px;
-  }
-  .feat{
-    display:flex;align-items:center;gap:6px;
-    font-size:0.7rem;color:var(--muted);
-  }
+  .hero-sub{font-size:0.95rem;color:var(--muted);max-width:480px;line-height:1.7;margin-bottom:48px;}
+  .login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:420px;position:relative;overflow:hidden;}
+  .login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+  .login-card h2{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:8px;}
+  .login-card p{font-size:0.78rem;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+  .btn-deriv{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:16px 24px;background:var(--accent);color:#000;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .btn-deriv:hover{background:#00ffca;transform:translateY(-1px);box-shadow:0 8px 32px rgba(0,229,180,0.3);}
+  .btn-deriv:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:0.7rem;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .features-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .feat{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--muted);}
   .feat-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);}
-
-  /* Stats ticker */
-  .ticker{
-    position:relative;z-index:1;
-    border-top:1px solid var(--border);
-    border-bottom:1px solid var(--border);
-    background:rgba(14,19,24,0.6);
-    padding:10px 0;
-    overflow:hidden;
-    margin-bottom:0;
-  }
-  .ticker-inner{
-    display:flex;gap:48px;
-    animation:tickerMove 30s linear infinite;
-    white-space:nowrap;
-  }
+  .ticker{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(14,19,24,0.6);padding:10px 0;overflow:hidden;}
+  .ticker-inner{display:flex;gap:48px;animation:tickerMove 30s linear infinite;white-space:nowrap;}
   @keyframes tickerMove{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-  .tick-item{
-    display:flex;align-items:center;gap:8px;
-    font-size:0.72rem;
-  }
-  .tick-name{color:var(--muted);}
-  .tick-val{color:var(--text);}
-  .tick-up{color:#00e5b4;}
-  .tick-dn{color:#ff4060;}
-
-  @keyframes fadeUp{
-    from{opacity:0;transform:translateY(20px);}
-    to{opacity:1;transform:translateY(0);}
-  }
-
-  footer{
-    position:relative;z-index:1;
-    text-align:center;
-    padding:20px;
-    font-size:0.68rem;
-    color:var(--muted);
-    border-top:1px solid var(--border);
-  }
+  .tick-item{display:flex;align-items:center;gap:8px;font-size:0.72rem;}
+  .tick-name{color:var(--muted);}.tick-val{color:var(--text);}.tick-up{color:#00e5b4;}.tick-dn{color:#ff4060;}
+  footer{position:relative;z-index:1;text-align:center;padding:20px;font-size:0.68rem;color:var(--muted);border-top:1px solid var(--border);}
+  .spin{width:18px;height:18px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @media(max-width:600px){nav{padding:16px 20px;}.hero{padding:40px 16px;}h1{font-size:2.4rem;}.login-card{padding:28px 20px;}}
 </style>
 </head>
 <body>
@@ -233,10 +54,7 @@
 <div class="glow-orb orb1"></div>
 <div class="glow-orb orb2"></div>
 
-<!-- Ticker -->
-<div class="ticker">
-  <div class="ticker-inner" id="ticker"></div>
-</div>
+<div class="ticker"><div class="ticker-inner" id="ticker"></div></div>
 
 <nav>
   <div>
@@ -253,12 +71,13 @@
 
   <div class="login-card">
     <h2>Connect Your Account</h2>
-    <p>Securely log in via Deriv OAuth. We never store your credentials.</p>
-    <a href="#" class="btn-deriv" id="loginBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-      Login with Deriv
-    </a>
-    <div class="divider">secure oauth 2.0</div>
+    <p>Securely log in via Deriv OAuth 2.0 + PKCE. We never store your credentials.</p>
+    <button class="btn-deriv" id="loginBtn" onclick="startLogin()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      <span id="btnText">Login with Deriv</span>
+      <div class="spin" id="btnSpin"></div>
+    </button>
+    <div class="divider">secure oauth 2.0 + pkce</div>
     <div class="features-row">
       <div class="feat"><div class="feat-dot"></div>Real accounts</div>
       <div class="feat"><div class="feat-dot"></div>Demo supported</div>
@@ -271,52 +90,40 @@
 <footer>ManooFX is an independent third-party platform. Not affiliated with Deriv Ltd. &nbsp;|&nbsp; Trading involves risk.</footer>
 
 <script>
-const APP_ID = 126398;
-const REDIRECT = encodeURIComponent('https://dennisfx-82td.vercel.app/callback');
-const OAUTH_URL = `https://oauth.deriv.com/oauth2/authorize?app_id=126398&l=en&brand=deriv&redirect_uri=${REDIRECT}`;
-document.getElementById('loginBtn').href = OAUTH_URL;
+// Redirect if already logged in
+if (localStorage.getItem('mfx_active')) location.href = 'dashboard.html';
 
-// Ticker symbols
+const APP_ID  = '33scAN1TBU9sHqZPKckm9';
+const REDIRECT = 'https://dennisfx-82td.vercel.app/callback.html';
+
+function startLogin() {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  document.getElementById('btnText').textContent = 'Connecting...';
+  document.getElementById('btnSpin').style.display = 'block';
+
+  // New Deriv OAuth2 URL — matches the new auth.deriv.com system
+  // Using app_id directly as client_id per Deriv new API docs
+  const oauthUrl = 'https://oauth.deriv.com/oauth2/authorize' +
+    '?app_id='      + APP_ID +
+    '&l=en' +
+    '&brand=deriv' +
+    '&redirect_uri=' + encodeURIComponent(REDIRECT);
+
+  window.location.href = oauthUrl;
+}
+
+// Ticker
 const symbols = [
-  {n:'V10 (1s)',v:'1234.56',c:'+0.12%',up:true},
-  {n:'V25 (1s)',v:'3421.10',c:'-0.08%',up:false},
-  {n:'V50 (1s)',v:'5678.90',c:'+0.31%',up:true},
-  {n:'V75 (1s)',v:'8901.23',c:'+0.19%',up:true},
-  {n:'V100 (1s)',v:'12034.45',c:'-0.22%',up:false},
-  {n:'V10',v:'1100.00',c:'+0.05%',up:true},
-  {n:'V25',v:'2800.55',c:'-0.14%',up:false},
-  {n:'V50',v:'5200.11',c:'+0.27%',up:true},
-  {n:'V75',v:'8500.77',c:'+0.09%',up:true},
-  {n:'V100',v:'11800.33',c:'-0.18%',up:false},
+  {n:'V10 (1s)',v:'1234.56',c:'+0.12%',up:true},{n:'V25 (1s)',v:'3421.10',c:'-0.08%',up:false},
+  {n:'V50 (1s)',v:'5678.90',c:'+0.31%',up:true},{n:'V75 (1s)',v:'8901.23',c:'+0.19%',up:true},
+  {n:'V100 (1s)',v:'12034.45',c:'-0.22%',up:false},{n:'V10',v:'1100.00',c:'+0.05%',up:true},
+  {n:'V25',v:'2800.55',c:'-0.14%',up:false},{n:'V50',v:'5200.11',c:'+0.27%',up:true},
+  {n:'V75',v:'8500.77',c:'+0.09%',up:true},{n:'V100',v:'11800.33',c:'-0.18%',up:false},
 ];
 const t = document.getElementById('ticker');
-const makeItems = () => symbols.map(s=>`
-  <div class="tick-item">
-    <span class="tick-name">${s.n}</span>
-    <span class="tick-val">${s.v}</span>
-    <span class="${s.up?'tick-up':'tick-dn'}">${s.c}</span>
-  </div>`).join('');
-t.innerHTML = makeItems()+makeItems(); // duplicate for seamless loop
-
-// Update ticks via WebSocket
-const ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id='+APP_ID);
-ws.onopen = ()=>{
-  ws.send(JSON.stringify({ticks:'R_10',subscribe:1}));
-};
-ws.onmessage = (e)=>{
-  const d = JSON.parse(e.data);
-  if(d.tick){
-    const sym = d.tick.symbol;
-    const price = d.tick.quote;
-    // update ticker display - simple approach
-    const items = document.querySelectorAll('.tick-item');
-    items.forEach(item=>{
-      if(item.querySelector('.tick-name')?.textContent.includes('V10 (1s)') && sym==='1HZ10V'){
-        item.querySelector('.tick-val').textContent = price.toFixed(2);
-      }
-    });
-  }
-};
+const items = () => symbols.map(s=>`<div class="tick-item"><span class="tick-name">${s.n}</span><span class="tick-val">${s.v}</span><span class="${s.up?'tick-up':'tick-dn'}">${s.c}</span></div>`).join('');
+t.innerHTML = items()+items();
 </script>
 </body>
 </html>
