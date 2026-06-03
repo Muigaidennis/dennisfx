@@ -1,6 +1,6 @@
 // ===== ManooFX Shared JS =====
 
-const APP_ID = 126398;
+const APP_ID = '33scAN1TBU9sHqZPKckm9';
 const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
 // ---- AUTH ----
