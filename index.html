@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>ManooFX — Trade Smarter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -53,9 +52,7 @@
 <div class="grid-bg"></div>
 <div class="glow-orb orb1"></div>
 <div class="glow-orb orb2"></div>
-
 <div class="ticker"><div class="ticker-inner" id="ticker"></div></div>
-
 <nav>
   <div>
     <div class="logo">Manoo<span>FX</span></div>
@@ -63,12 +60,10 @@
   </div>
   <div class="nav-tag">v2.0</div>
 </nav>
-
 <section class="hero">
   <div class="hero-badge"><div class="dot"></div> Live Trading Platform</div>
   <h1>Trade Deriv<br><span class="line2">Smarter.</span></h1>
   <p class="hero-sub">Professional-grade tools for Deriv markets. Real-time ticks, advanced bots, deep analytics — all in one place.</p>
-
   <div class="login-card">
     <h2>Connect Your Account</h2>
     <p>Securely log in via Deriv OAuth 2.0 + PKCE. We never store your credentials.</p>
@@ -86,31 +81,61 @@
     </div>
   </div>
 </section>
-
 <footer>ManooFX is an independent third-party platform. Not affiliated with Deriv Ltd. &nbsp;|&nbsp; Trading involves risk.</footer>
 
 <script>
 // Redirect if already logged in
 if (localStorage.getItem('mfx_active')) location.href = 'dashboard.html';
 
-const APP_ID  = '33scAN1TBU9sHqZPKckm9';
-const REDIRECT = 'https://dennisfx-82td.vercel.app/callback.html';
+const CLIENT_ID = '33scAN1TBU9sHqZPKckm9';
+const REDIRECT  = 'https://dennisfx-82td.vercel.app/callback.html';
 
-function startLogin() {
+async function startLogin() {
   const btn = document.getElementById('loginBtn');
   btn.disabled = true;
   document.getElementById('btnText').textContent = 'Connecting...';
   document.getElementById('btnSpin').style.display = 'block';
 
-  // New Deriv OAuth2 URL — matches the new auth.deriv.com system
-  // Using app_id directly as client_id per Deriv new API docs
-  const oauthUrl = 'https://oauth.deriv.com/oauth2/authorize' +
-    '?app_id='      + APP_ID +
-    '&l=en' +
-    '&brand=deriv' +
-    '&redirect_uri=' + encodeURIComponent(REDIRECT);
+  try {
+    // Step 1: Generate code_verifier
+    const array = crypto.getRandomValues(new Uint8Array(64));
+    const codeVerifier = Array.from(array)
+      .map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66])
+      .join('');
 
-  window.location.href = oauthUrl;
+    // Step 2: Derive code_challenge = BASE64URL(SHA256(codeVerifier))
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+    const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    // Step 3: Generate random state for CSRF protection
+    const state = crypto.getRandomValues(new Uint8Array(16))
+      .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+
+    // Step 4: Store verifier and state in sessionStorage before redirecting
+    sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+    sessionStorage.setItem('oauth_state', state);
+
+    // Step 5: Build the exact URL as per Deriv docs
+    const params = new URLSearchParams({
+      response_type:          'code',
+      client_id:              CLIENT_ID,
+      redirect_uri:           REDIRECT,
+      scope:                  'trade account_manage',
+      state:                  state,
+      code_challenge:         codeChallenge,
+      code_challenge_method:  'S256'
+    });
+
+    // Redirect to Deriv authorization page
+    window.location.href = 'https://auth.deriv.com/oauth2/auth?' + params.toString();
+
+  } catch(e) {
+    btn.disabled = false;
+    document.getElementById('btnText').textContent = 'Login with Deriv';
+    document.getElementById('btnSpin').style.display = 'none';
+    alert('Login error: ' + e.message);
+  }
 }
 
 // Ticker
