@@ -204,10 +204,12 @@
   </main>
 </div>
 
+<div id="bottomNavHolder"></div>
 <script>
 const active = requireAuth();
 document.getElementById('navHolder').innerHTML = buildNav('analysis');
 document.getElementById('sidebarHolder').innerHTML = buildSidebar('analysis');
+document.getElementById('bottomNavHolder').innerHTML = buildBottomNav('analysis');
 
 const ws = new DerivWS();
 let digits = [];
