@@ -90,10 +90,12 @@
   </main>
 </div>
 
+<div id="bottomNavHolder"></div>
 <script>
 const active = requireAuth();
 document.getElementById('navHolder').innerHTML = buildNav('analytics');
 document.getElementById('sidebarHolder').innerHTML = buildSidebar('analytics');
+document.getElementById('bottomNavHolder').innerHTML = buildBottomNav('analytics');
 
 const ws = new DerivWS();
 let allTx = [];
