@@ -236,10 +236,12 @@
   </main>
 </div>
 
+<div id="bottomNavHolder"></div>
 <script>
 const active = requireAuth();
 document.getElementById('navHolder').innerHTML = buildNav('admin');
 document.getElementById('sidebarHolder').innerHTML = buildSidebar('admin');
+document.getElementById('bottomNavHolder').innerHTML = buildBottomNav('admin');
 
 // Check admin access
 if (!isAdmin()) {
