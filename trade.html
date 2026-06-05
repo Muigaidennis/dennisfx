@@ -192,10 +192,12 @@
   </main>
 </div>
 
+<div id="bottomNavHolder"></div>
 <script>
 const active = requireAuth();
 document.getElementById('navHolder').innerHTML = buildNav('trade');
 document.getElementById('sidebarHolder').innerHTML = buildSidebar('trade');
+document.getElementById('bottomNavHolder').innerHTML = buildBottomNav('trade');
 
 const ws = new DerivWS();
 let selectedType = 'CALL';
