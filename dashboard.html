@@ -6,85 +6,72 @@
 <link rel="stylesheet" href="shared.css"/>
 <script src="shared.js"></script>
 <style>
+  /* Balance Hero */
   .balance-hero {
-    background: linear-gradient(135deg, rgba(0,229,180,0.08) 0%, rgba(0,119,255,0.05) 100%);
+    background: linear-gradient(135deg,rgba(0,229,180,0.08),rgba(0,119,255,0.05));
     border: 1px solid rgba(0,229,180,0.15);
-    border-radius: 18px;
-    padding: 32px;
-    margin-bottom: 20px;
-    position: relative; overflow: hidden;
+    border-radius: 18px; padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden;
   }
   .balance-hero::before {
-    content: ''; position: absolute; top: -40px; right: -40px;
-    width: 200px; height: 200px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,229,180,0.08) 0%, transparent 70%);
+    content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;
+    background:radial-gradient(circle,rgba(0,229,180,0.08),transparent 70%);
   }
-  .balance-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .balance-amount {
-    font-family: var(--font-display);
-    font-size: 3rem; font-weight: 800; line-height: 1;
-    letter-spacing: -0.02em;
-  }
-  .balance-currency { font-size: 1rem; color: var(--muted); margin-left: 6px; }
-  .balance-sub { margin-top: 8px; font-size: 0.75rem; color: var(--muted); }
+  .balance-label { font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px; }
+  .balance-amount { font-family:var(--font-display);font-size:2.2rem;font-weight:800;line-height:1;letter-spacing:-0.02em; }
+  .balance-currency { font-size:0.85rem;color:var(--muted);margin-left:4px; }
+  .balance-type { margin-top:6px; }
 
-  .accs-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  /* Account pills */
+  .accs-row { display:flex;gap:8px;margin-top:14px;overflow-x:auto;padding-bottom:4px; }
   .acc-pill {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 16px;
-    cursor: pointer; flex: 1; min-width: 140px;
-    transition: all 0.15s;
+    background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:10px 14px;cursor:pointer;flex-shrink:0;min-width:130px;transition:all 0.15s;
   }
-  .acc-pill:hover { border-color: var(--border2); }
-  .acc-pill.active { border-color: var(--accent); background: rgba(0,229,180,0.05); }
-  .acc-pill-name { font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; }
-  .acc-pill-bal { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; }
-  .acc-pill-cur { font-size: 0.68rem; color: var(--muted); }
+  .acc-pill:hover { border-color:var(--border2); }
+  .acc-pill.active { border-color:var(--accent);background:rgba(0,229,180,0.05); }
+  .acc-pill-name { font-size:0.62rem;color:var(--muted);margin-bottom:3px; }
+  .acc-pill-bal { font-family:var(--font-display);font-size:1rem;font-weight:700; }
+  .acc-pill-id { font-size:0.6rem;color:var(--muted);margin-top:2px; }
+
+  /* Stats */
+  .stats-row { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
 
   /* Quick trade */
-  .quick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .quick-row { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
   .quick-btn {
-    padding: 16px; border-radius: var(--radius); border: 1px solid var(--border);
-    background: var(--card); cursor: pointer; text-align: center;
-    transition: all 0.15s; font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
+    padding:14px 8px;border-radius:var(--radius);border:1px solid var(--border);
+    background:var(--card);cursor:pointer;text-align:center;transition:all 0.15s;
+    font-family:var(--font-display);font-size:0.85rem;font-weight:700;
   }
-  .quick-buy { border-color: rgba(0,229,180,0.2); color: var(--accent); }
-  .quick-buy:hover { background: rgba(0,229,180,0.08); }
-  .quick-sell { border-color: rgba(255,64,96,0.2); color: var(--danger); }
-  .quick-sell:hover { background: rgba(255,64,96,0.08); }
-  .quick-sub { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 4px; }
+  .quick-buy { border-color:rgba(0,229,180,0.2);color:var(--accent); }
+  .quick-buy:hover { background:rgba(0,229,180,0.08); }
+  .quick-sell { border-color:rgba(255,64,96,0.2);color:var(--danger); }
+  .quick-sell:hover { background:rgba(255,64,96,0.08); }
+  .quick-sub { font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);margin-top:3px; }
 
   /* Open contracts */
   .contract-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 0; border-bottom: 1px solid var(--border);
-    font-size: 0.78rem;
+    display:flex;align-items:center;gap:8px;padding:10px 0;
+    border-bottom:1px solid var(--border);font-size:0.72rem;
   }
-  .contract-row:last-child { border-bottom: none; }
-  .contract-sym { font-family: var(--font-display); font-weight: 600; flex: 1; }
-  .contract-type { font-size: 0.68rem; }
-  .contract-pnl { font-family: var(--font-display); font-weight: 700; min-width: 80px; text-align: right; }
+  .contract-row:last-child { border-bottom:none; }
 
-  .mini-chart { height: 60px; width: 100%; }
-  canvas.mini-chart { display: block; }
-
+  /* Activity */
   .activity-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-    font-size: 0.75rem;
+    display:flex;align-items:center;gap:8px;padding:8px 0;
+    border-bottom:1px solid var(--border);font-size:0.72rem;
   }
-  .activity-item:last-child { border-bottom: none; }
+  .activity-item:last-child { border-bottom:none; }
   .activity-icon {
-    width: 28px; height: 28px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-size: 0.7rem;
+    width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;font-size:0.65rem;
   }
-  .act-buy { background: rgba(0,229,180,0.1); color: var(--accent); }
-  .act-sell { background: rgba(255,64,96,0.1); color: var(--danger); }
-  .activity-info { flex: 1; }
-  .activity-label { color: var(--text2); }
-  .activity-time { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
-  .activity-val { font-family: var(--font-display); font-weight: 700; }
+  .act-buy { background:rgba(0,229,180,0.1);color:var(--accent); }
+  .act-sell { background:rgba(255,64,96,0.1);color:var(--danger); }
+  .activity-info { flex:1;min-width:0; }
+  .activity-label { color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .activity-time { font-size:0.6rem;color:var(--muted);margin-top:1px; }
+  .activity-val { font-family:var(--font-display);font-weight:700;font-size:0.8rem;flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -92,14 +79,15 @@
 <div class="mfx-layout">
   <div id="sidebarHolder"></div>
   <main class="mfx-main">
+
     <div class="page-header">
       <div>
         <div class="page-title">Dashboard</div>
-        <div class="page-sub">Account overview & quick actions</div>
+        <div class="page-sub">Account overview</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="live-dot">Live</div>
-        <span id="serverTime" style="font-size:0.7rem;color:var(--muted)"></span>
+        <span id="serverTime" style="font-size:0.62rem;color:var(--muted)"></span>
       </div>
     </div>
 
@@ -110,54 +98,40 @@
         <span class="balance-amount" id="mainBalance">—</span>
         <span class="balance-currency" id="mainCurrency"></span>
       </div>
-      <div class="balance-sub" id="accTypeTag"></div>
+      <div class="balance-type" id="accTypeTag"></div>
+      <!-- All account pills -->
       <div class="accs-row" id="accsList"></div>
     </div>
 
-    <!-- Stats row -->
-    <div class="grid-4" style="margin-bottom:20px;" id="statsGrid">
+    <!-- Stats -->
+    <div class="stats-row">
       <div class="mfx-card">
-        <div class="mfx-card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg> Open Contracts</div>
+        <div class="mfx-card-title">Open</div>
         <div class="stat-val" id="openCount">—</div>
-        <div class="stat-label">currently active</div>
+        <div class="stat-label">contracts</div>
       </div>
       <div class="mfx-card">
-        <div class="mfx-card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Today P&L</div>
+        <div class="mfx-card-title">Today P&L</div>
         <div class="stat-val" id="todayPnl">—</div>
         <div class="stat-label">unrealized</div>
       </div>
       <div class="mfx-card">
-        <div class="mfx-card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Trades Today</div>
+        <div class="mfx-card-title">Trades</div>
         <div class="stat-val" id="tradesToday">—</div>
-        <div class="stat-label">transactions</div>
+        <div class="stat-label">today</div>
       </div>
       <div class="mfx-card">
-        <div class="mfx-card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Market</div>
-        <div class="stat-val" id="marketStatus" style="font-size:1rem;margin-top:4px;">—</div>
-        <div class="stat-label">Volatility indices</div>
+        <div class="mfx-card-title">Market</div>
+        <div class="stat-val" style="font-size:0.85rem;margin-top:4px;" id="marketStatus">—</div>
+        <div class="stat-label">status</div>
       </div>
     </div>
 
-    <!-- Main grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
-
-      <!-- Open Contracts -->
-      <div class="mfx-card" style="grid-column:span 2;">
-        <div class="mfx-card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
-          Open Contracts
-          <span class="live-dot" style="margin-left:auto;font-size:0.6rem">Live</span>
-        </div>
-        <div id="openContracts"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
-      </div>
-
-      <!-- Quick Trade -->
-      <div class="mfx-card">
-        <div class="mfx-card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><zap/><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Quick Trade
-        </div>
-        <div style="margin-bottom:12px;">
+    <!-- Quick Trade -->
+    <div class="mfx-card" style="margin-bottom:14px;">
+      <div class="mfx-card-title">Quick Trade</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+        <div>
           <label class="field-label">Symbol</label>
           <select class="mfx-select" id="qtSymbol">
             <option value="R_10">Volatility 10</option>
@@ -172,136 +146,145 @@
             <option value="1HZ100V">Vol 100 (1s)</option>
           </select>
         </div>
-        <div style="margin-bottom:12px;">
-          <label class="field-label">Stake (USD)</label>
-          <input class="mfx-input" type="number" id="qtStake" value="1" min="0.35" step="0.01"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label class="field-label">Stake (USD)</label>
+            <input class="mfx-input" type="number" id="qtStake" value="1" min="0.35" step="0.01"/>
+          </div>
+          <div>
+            <label class="field-label">Duration</label>
+            <input class="mfx-input" type="number" id="qtDur" value="5" min="1"/>
+          </div>
         </div>
-        <div style="margin-bottom:12px;">
-          <label class="field-label">Duration</label>
-          <div style="display:flex;gap:8px;">
-            <input class="mfx-input" type="number" id="qtDur" value="5" min="1" style="width:80px;"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label class="field-label">Unit</label>
             <select class="mfx-select" id="qtDurUnit">
               <option value="t">Ticks</option>
               <option value="s">Seconds</option>
               <option value="m">Minutes</option>
             </select>
           </div>
-        </div>
-        <div style="margin-bottom:12px;">
-          <label class="field-label">Contract Type</label>
-          <select class="mfx-select" id="qtType">
-            <option value="CALL">Rise</option>
-            <option value="PUT">Fall</option>
-            <option value="DIGITEVEN">Even</option>
-            <option value="DIGITODD">Odd</option>
-            <option value="DIGITOVER">Over</option>
-            <option value="DIGITUNDER">Under</option>
-          </select>
-        </div>
-        <div id="qtPayout" style="font-size:0.72rem;color:var(--muted);margin-bottom:12px;">Est. payout: —</div>
-        <div class="quick-row">
-          <button class="quick-btn quick-buy" onclick="quickTrade('buy')">
-            ▲ BUY<div class="quick-sub">Rise / Over</div>
-          </button>
-          <button class="quick-btn quick-sell" onclick="quickTrade('sell')">
-            ▼ SELL<div class="quick-sub">Fall / Under</div>
-          </button>
+          <div>
+            <label class="field-label">Type</label>
+            <select class="mfx-select" id="qtType">
+              <option value="CALL">Rise</option>
+              <option value="PUT">Fall</option>
+              <option value="DIGITEVEN">Even</option>
+              <option value="DIGITODD">Odd</option>
+            </select>
+          </div>
         </div>
       </div>
-
-      <!-- Recent Activity -->
-      <div class="mfx-card" style="grid-column:span 2;">
-        <div class="mfx-card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Recent Transactions
-        </div>
-        <div id="recentTx"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
-      </div>
-
-      <!-- Market Overview -->
-      <div class="mfx-card">
-        <div class="mfx-card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
-          Market Snapshot
-        </div>
-        <div id="marketSnap"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
+      <div id="qtPayout" style="font-size:0.68rem;color:var(--muted);margin-bottom:10px;">Est. payout: —</div>
+      <div class="quick-row">
+        <button class="quick-btn quick-buy" onclick="quickTrade('buy')">▲ BUY<div class="quick-sub">Rise/Even</div></button>
+        <button class="quick-btn quick-sell" onclick="quickTrade('sell')">▼ SELL<div class="quick-sub">Fall/Odd</div></button>
       </div>
     </div>
+
+    <!-- Open Contracts -->
+    <div class="mfx-card" style="margin-bottom:14px;">
+      <div class="mfx-card-title">Open Contracts <span class="live-dot" style="margin-left:auto;font-size:0.58rem">Live</span></div>
+      <div id="openContracts"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="mfx-card" style="margin-bottom:14px;">
+      <div class="mfx-card-title">Recent Transactions</div>
+      <div id="recentTx"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
+    </div>
+
+    <!-- Market Snapshot -->
+    <div class="mfx-card" style="margin-bottom:14px;">
+      <div class="mfx-card-title">Market Snapshot <span class="live-dot" style="margin-left:auto;font-size:0.58rem">Live</span></div>
+      <div id="marketSnap"><div class="mfx-loader"><div class="spin"></div>Connecting...</div></div>
+    </div>
+
   </main>
 </div>
+<div id="bottomNavHolder"></div>
 
 <script>
 const active = requireAuth();
 document.getElementById('navHolder').innerHTML = buildNav('dashboard');
 document.getElementById('sidebarHolder').innerHTML = buildSidebar('dashboard');
+document.getElementById('bottomNavHolder').innerHTML = buildBottomNav('dashboard');
 
 const ws = new DerivWS();
-let portfolio = [];
-
 ws.connect(active.token);
 
 ws.on('authorize', async (data) => {
   if (data.error) { toast('Auth failed: ' + data.error.message, 'error'); return; }
+  toast('Connected to Deriv', 'success');
 
-  // Fetch balance all accounts
-  const balRes = await ws.send({ balance: 1, account: 'all' });
-  updateBalances(balRes.balance);
+  // Fetch balance for all accounts
+  try {
+    const balRes = await ws.send({ balance: 1, account: 'all' });
+    updateBalances(balRes.balance);
+    // Subscribe to live balance updates
+    ws.subscribe({ balance: 1, account: 'all' }, (d) => { if(d.balance) updateBalances(d.balance); });
+  } catch(e) { toast('Balance error: ' + e.message, 'error'); }
 
   // Open contracts
-  const portRes = await ws.send({ portfolio: 1 });
-  portfolio = portRes.portfolio?.contracts || [];
-  renderOpenContracts(portfolio);
-  document.getElementById('openCount').textContent = portfolio.length;
+  try {
+    const portRes = await ws.send({ portfolio: 1 });
+    const contracts = portRes.portfolio?.contracts || [];
+    renderOpenContracts(contracts);
+    document.getElementById('openCount').textContent = contracts.length;
+  } catch(e) { document.getElementById('openContracts').innerHTML = '<div class="mfx-loader">No open contracts</div>'; }
 
-  // Statement for recent tx
-  const stmt = await ws.send({ statement: 1, limit: 10, action_type: 'buy' });
-  renderRecentTx(stmt.statement?.transactions || []);
-
-  // Today's trades count
-  const today = await ws.send({ statement: 1, limit: 50 });
-  const txs = today.statement?.transactions || [];
-  const todayCount = txs.filter(t => {
-    const d = new Date(t.transaction_time * 1000);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  }).length;
-  document.getElementById('tradesToday').textContent = todayCount;
-
-  // Subscribe to balance updates
-  ws.subscribe({ balance: 1, account: 'all' }, (d) => {
-    if (d.balance) updateBalances(d.balance);
-  });
+  // Recent transactions
+  try {
+    const stmt = await ws.send({ statement: 1, limit: 8 });
+    renderRecentTx(stmt.statement?.transactions || []);
+    const todayTxs = (stmt.statement?.transactions || []).filter(t => {
+      return new Date(t.transaction_time*1000).toDateString() === new Date().toDateString();
+    });
+    document.getElementById('tradesToday').textContent = todayTxs.length;
+  } catch(e) {}
 
   // Market status
-  document.getElementById('marketStatus').innerHTML = '<span class="tag tag-green">Open</span>';
+  document.getElementById('marketStatus').innerHTML = '<span class="tag tag-green">● Open</span>';
 
-  // Subscribe to ticks for market snapshot
+  // Market snapshot ticks
   loadMarketSnap();
 
-  // Subscribe to open contract updates
-  subscribeOpenContracts();
+  // Subscribe open contract PnL
+  ws.subscribe({ proposal_open_contract: 1 }, (d) => {
+    const c = d.proposal_open_contract;
+    if (!c) return;
+    const el = document.getElementById('pnl_'+c.contract_id);
+    if (el) {
+      el.textContent = (c.profit>=0?'+':'')+fmt(c.profit)+' '+c.currency;
+      el.className = 'activity-val '+(c.profit>=0?'up':'dn');
+    }
+    document.getElementById('todayPnl').textContent = (c.profit>=0?'+':'')+fmt(c.profit);
+    document.getElementById('todayPnl').className = 'stat-val '+(c.profit>=0?'up':'dn');
+  });
+
+  // Proposal
+  setTimeout(getProposal, 1500);
 });
 
-ws.on('time', (d) => {
-  const t = new Date(d.time * 1000);
-  document.getElementById('serverTime').textContent = t.toUTCString().slice(17, 25) + ' UTC';
+// Server time
+ws.on('time', d => {
+  document.getElementById('serverTime').textContent = new Date(d.time*1000).toUTCString().slice(17,25)+' UTC';
 });
 ws.send({ time: 1 });
-setInterval(() => ws.send({ time: 1 }), 10000);
+setInterval(()=>ws.send({time:1}), 30000);
 
 function updateBalances(balance) {
   const accounts = getAccounts();
   const activeAcc = getActive();
-
-  // Main balance
   const curr = balance.accounts?.[activeAcc.account];
   if (curr) {
     document.getElementById('mainBalance').textContent = fmt(curr.balance);
     document.getElementById('mainCurrency').textContent = curr.currency;
     const isDemo = activeAcc.account.startsWith('VRTC');
-    document.getElementById('accTypeTag').innerHTML = `<span class="tag ${isDemo?'tag-blue':'tag-green'}">${isDemo?'Demo Account':'Real Account'}</span>`;
+    document.getElementById('accTypeTag').innerHTML =
+      `<span class="tag ${isDemo?'tag-blue':'tag-green'}">${isDemo?'🔵 Demo Account':'🟢 Real Account'}</span>`;
   }
-
   // Account pills
   const list = document.getElementById('accsList');
   list.innerHTML = accounts.map(a => {
@@ -309,67 +292,52 @@ function updateBalances(balance) {
     const isDemo = a.account.startsWith('VRTC');
     const isCurr = a.account === activeAcc.account;
     return `<div class="acc-pill ${isCurr?'active':''}" onclick="switchAccount('${a.account}')">
-      <div class="acc-pill-name">${isDemo?'Demo':'Real'} · ${a.currency}</div>
-      <div class="acc-pill-bal ${isCurr?'up':''}">${bal ? fmt(bal.balance) : '—'}</div>
-      <div class="acc-pill-cur">${a.account}</div>
+      <div class="acc-pill-name">${isDemo?'Demo':'Real'} · ${a.currency||'USD'}</div>
+      <div class="acc-pill-bal ${isCurr?'up':''}">${bal?fmt(bal.balance):'—'}</div>
+      <div class="acc-pill-id">${a.account}</div>
     </div>`;
   }).join('');
+  // Also update dropdown balances
+  accounts.forEach(a => {
+    const bal = balance.accounts?.[a.account];
+    const el = document.getElementById('bal_'+a.account);
+    if (el && bal) el.textContent = fmt(bal.balance)+' '+bal.currency;
+  });
 }
 
 function renderOpenContracts(contracts) {
   const el = document.getElementById('openContracts');
   if (!contracts.length) {
-    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.78rem;">No open contracts</div>';
+    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.72rem;">No open contracts</div>';
     return;
   }
-  el.innerHTML = contracts.slice(0, 6).map(c => `
+  el.innerHTML = contracts.slice(0,5).map(c=>`
     <div class="contract-row">
-      <div class="contract-sym">${c.symbol}</div>
-      <div class="contract-type">
-        <span class="tag tag-green">${c.shortcode?.split('_')[0] || c.contract_type}</span>
+      <div style="flex:1;">
+        <div style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;">${c.symbol}</div>
+        <div style="font-size:0.62rem;color:var(--muted);">${c.contract_type} · ${fmt(c.buy_price)} USD</div>
       </div>
-      <div style="flex:1;font-size:0.7rem;color:var(--muted)">
-        Stake: ${fmt(c.buy_price)} ${c.currency}
-      </div>
-      <div class="contract-pnl" id="pnl_${c.contract_id}">—</div>
-      <button class="btn btn-danger" style="padding:5px 12px;font-size:0.68rem;" onclick="sellContract(${c.contract_id})">Sell</button>
+      <div class="activity-val up" id="pnl_${c.contract_id}">—</div>
+      <button class="btn btn-danger" style="padding:4px 10px;font-size:0.65rem;" onclick="sellContract(${c.contract_id})">Sell</button>
     </div>`).join('');
-}
-
-function subscribeOpenContracts() {
-  ws.subscribe({ proposal_open_contract: 1, subscribe: 1 }, (d) => {
-    const c = d.proposal_open_contract;
-    if (!c) return;
-    const el = document.getElementById('pnl_' + c.contract_id);
-    if (el) {
-      const pnl = c.profit;
-      el.textContent = (pnl >= 0 ? '+' : '') + fmt(pnl) + ' ' + c.currency;
-      el.className = 'contract-pnl ' + (pnl >= 0 ? 'up' : 'dn');
-    }
-    document.getElementById('todayPnl').textContent = (c.profit >= 0 ? '+' : '') + fmt(c.profit);
-    document.getElementById('todayPnl').className = 'stat-val ' + (c.profit >= 0 ? 'up' : 'dn');
-  });
 }
 
 async function sellContract(id) {
   try {
     const res = await ws.send({ sell: id, price: 0 });
-    if (res.sell) {
-      toast('Contract sold for ' + fmt(res.sell.sold_for), 'success');
-      setTimeout(() => location.reload(), 1000);
-    }
-  } catch(e) { toast('Sell failed: ' + e.message, 'error'); }
+    if (res.sell) { toast('Sold for '+fmt(res.sell.sold_for), 'success'); setTimeout(()=>location.reload(),1000); }
+  } catch(e) { toast('Sell failed: '+e.message,'error'); }
 }
 
 function renderRecentTx(txs) {
   const el = document.getElementById('recentTx');
-  if (!txs.length) { el.innerHTML = '<div class="mfx-loader">No transactions</div>'; return; }
+  if (!txs.length) { el.innerHTML = '<div class="mfx-loader">No transactions yet</div>'; return; }
   el.innerHTML = txs.map(t => {
-    const isBuy = t.action_type === 'buy';
+    const isBuy = t.action_type==='buy';
     return `<div class="activity-item">
       <div class="activity-icon ${isBuy?'act-buy':'act-sell'}">${isBuy?'▲':'▼'}</div>
       <div class="activity-info">
-        <div class="activity-label">${t.longcode?.slice(0,50) || t.action_type}...</div>
+        <div class="activity-label">${(t.longcode||t.action_type).slice(0,45)}...</div>
         <div class="activity-time">${fmtTime(t.transaction_time)}</div>
       </div>
       <div class="activity-val ${isBuy?'dn':'up'}">${isBuy?'-':'+'} ${fmt(Math.abs(t.amount))}</div>
@@ -378,77 +346,58 @@ function renderRecentTx(txs) {
 }
 
 async function loadMarketSnap() {
-  const syms = ['R_10','R_50','R_100','1HZ10V','1HZ100V'];
+  const syms = ['R_10','R_25','R_50','R_75','R_100','1HZ10V','1HZ100V'];
   const snapEl = document.getElementById('marketSnap');
-  const prices = {};
-  snapEl.innerHTML = syms.map(s => `
-    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.75rem;">
+  snapEl.innerHTML = syms.map(s=>`
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:0.72rem;">
       <span style="color:var(--muted)">${s}</span>
       <span id="snap_${s}" style="font-family:var(--font-display);font-weight:600">—</span>
     </div>`).join('');
-
   syms.forEach(sym => {
-    ws.subscribe({ ticks: sym }, (d) => {
+    ws.subscribe({ ticks: sym }, d => {
       if (d.tick) {
-        const el = document.getElementById('snap_' + sym);
+        const el = document.getElementById('snap_'+sym);
         if (el) el.textContent = fmt(d.tick.quote, 3);
       }
     });
   });
 }
 
-// Quick trade
-let proposalTimeout = null;
+let proposalTimer = null;
 async function getProposal() {
   const sym = document.getElementById('qtSymbol').value;
-  const stake = parseFloat(document.getElementById('qtStake').value) || 1;
-  const dur = parseInt(document.getElementById('qtDur').value) || 5;
+  const stake = parseFloat(document.getElementById('qtStake').value)||1;
+  const dur = parseInt(document.getElementById('qtDur').value)||5;
   const unit = document.getElementById('qtDurUnit').value;
   const type = document.getElementById('qtType').value;
   try {
-    const res = await ws.send({
-      proposal: 1, amount: stake, basis: 'stake',
-      contract_type: type, currency: active.currency || 'USD',
-      duration: dur, duration_unit: unit, symbol: sym
-    });
-    if (res.proposal) {
-      document.getElementById('qtPayout').textContent = `Est. payout: ${fmt(res.proposal.payout)} ${res.proposal.display_value}`;
-    }
+    const res = await ws.send({ proposal:1, amount:stake, basis:'stake', contract_type:type, currency:'USD', duration:dur, duration_unit:unit, symbol:sym });
+    if (res.proposal) document.getElementById('qtPayout').textContent = `Est. payout: ${fmt(res.proposal.payout)} USD`;
   } catch(e) {}
 }
 
 ['qtSymbol','qtStake','qtDur','qtDurUnit','qtType'].forEach(id => {
-  document.getElementById(id).addEventListener('change', () => {
-    clearTimeout(proposalTimeout);
-    proposalTimeout = setTimeout(getProposal, 400);
+  document.getElementById(id).addEventListener('change', ()=>{
+    clearTimeout(proposalTimer);
+    proposalTimer = setTimeout(getProposal, 500);
   });
 });
 
 async function quickTrade(direction) {
   const sym = document.getElementById('qtSymbol').value;
-  const stake = parseFloat(document.getElementById('qtStake').value) || 1;
-  const dur = parseInt(document.getElementById('qtDur').value) || 5;
+  const stake = parseFloat(document.getElementById('qtStake').value)||1;
+  const dur = parseInt(document.getElementById('qtDur').value)||5;
   const unit = document.getElementById('qtDurUnit').value;
   let type = document.getElementById('qtType').value;
-  if (direction === 'sell' && type === 'CALL') type = 'PUT';
-  if (direction === 'buy' && type === 'PUT') type = 'CALL';
-
+  if (direction==='sell' && type==='CALL') type='PUT';
+  if (direction==='buy' && type==='PUT') type='CALL';
   try {
-    const prop = await ws.send({
-      proposal: 1, amount: stake, basis: 'stake',
-      contract_type: type, currency: active.currency || 'USD',
-      duration: dur, duration_unit: unit, symbol: sym
-    });
-    if (prop.error) { toast(prop.error.message, 'error'); return; }
-    const buy = await ws.send({ buy: prop.proposal.id, price: prop.proposal.ask_price });
-    if (buy.buy) {
-      toast(`Bought! Contract #${buy.buy.contract_id}`, 'success');
-      setTimeout(() => location.reload(), 1500);
-    }
-  } catch(e) { toast('Trade failed: ' + (e.message||e.code), 'error'); }
+    const prop = await ws.send({ proposal:1, amount:stake, basis:'stake', contract_type:type, currency:'USD', duration:dur, duration_unit:unit, symbol:sym });
+    if (prop.error) { toast(prop.error.message,'error'); return; }
+    const buy = await ws.send({ buy:prop.proposal.id, price:prop.proposal.ask_price });
+    if (buy.buy) { toast(`✓ Contract #${buy.buy.contract_id} bought!`, 'success'); setTimeout(()=>location.reload(),1500); }
+  } catch(e) { toast('Trade failed: '+(e.message||e.code),'error'); }
 }
-
-setTimeout(getProposal, 2000);
 </script>
 </body>
 </html>
