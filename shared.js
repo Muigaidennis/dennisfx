@@ -154,5 +154,4 @@ async function switchAccount(account) {
 function buildNav(activePage) { return ''; }
 function buildSidebar(activePage) { return ''; }
 function buildBottomNav(activePage) { return ''; }
-shared.js
-Displaying shared.js.
+
