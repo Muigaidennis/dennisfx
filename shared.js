@@ -19,16 +19,10 @@ function getActive() {
 }
 function setActive(acc) {
   localStorage.setItem('mfx_active', JSON.stringify(acc));
-}
-function isAdmin() {
-  const adminId = localStorage.getItem('mfx_admin_id');
-  const active = getActive();
-  return active && active.account === adminId;
+  localStorage.setItem('mfx_access_token', acc.token);
 }
 function logout() {
-  localStorage.removeItem('mfx_active');
-  localStorage.removeItem('mfx_accounts');
-  localStorage.removeItem('mfx_access_token');
+  localStorage.clear();
   location.href = 'index.html';
 }
 
@@ -46,10 +40,11 @@ class DerivWS {
   }
 
   _open() {
+    if (this.ws) this.ws.close(); // Close existing connection if any
     this.ws = new WebSocket(WS_URL);
     this.ws.onopen = () => {
       this.connected = true;
-      // Authorize immediately
+      // Authorize immediately with the token
       this._sendRaw({ authorize: this.token });
       this.queue.forEach(m => this._sendRaw(m));
       this.queue = [];
@@ -67,7 +62,12 @@ class DerivWS {
     };
     this.ws.onclose = () => {
       this.connected = false;
-      this.reconnectTimer = setTimeout(() => this._open(), 3000);
+      if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = setTimeout(() => this._open(), 3000); // Attempt to reconnect after 3 seconds
+    };
+    this.ws.onerror = (error) => {
+      console.error('WebSocket Error:', error);
+      toast('WebSocket connection error. Attempting to reconnect...', 'error');
     };
   }
 
@@ -104,21 +104,33 @@ class DerivWS {
   }
 }
 
-// ---- UI BUILDERS ----
-function buildNav(activePage) {
+// ---- UI HELPERS ----
+function buildNav(page) {
   return `<nav class="top-nav">
     <div class="logo">Manoo<span>FX</span></div>
     <div class="nav-links">
-      <a href="dashboard.html" class="${activePage==='dashboard'?'active':''}">Dashboard</a>
-      <a href="trade.html" class="${activePage==='trade'?'active':''}">Trade</a>
+      <a href="dashboard.html" class="${page==='dashboard'?'active':''}">Dashboard</a>
+      <a href="trade.html" class="${page==='trade'?'active':''}">Trade</a>
     </div>
   </nav>`;
 }
 
 function buildSidebar(activePage) {
   const activeAcc = getActive();
+  const accounts = getAccounts();
+  
+  let accountOptions = '';
+  accounts.forEach(acc => {
+    accountOptions += `<option value="${acc.account}" ${acc.account === activeAcc.account ? 'selected' : ''}>
+      ${acc.account.startsWith('VRTC') ? 'Demo' : 'Real'} (${acc.currency})
+    </option>`;
+  });
+
   return `<aside class="mfx-sidebar">
     <div class="sidebar-user">
+      <select onchange="switchAccount(this.value)" style="width:100%; padding:8px; border-radius:4px; border:1px solid var(--border); background:var(--surface); color:var(--text); margin-bottom:10px;">
+        ${accountOptions}
+      </select>
       <div class="user-id">${activeAcc.account}</div>
       <div class="user-type">${activeAcc.account.startsWith('VRTC')?'Demo':'Real'} Account</div>
     </div>
@@ -129,16 +141,13 @@ function buildSidebar(activePage) {
   </aside>`;
 }
 
-function buildBottomNav(activePage) {
+function buildBottomNav(page) {
   return `<div class="bottom-nav">
-    <a href="dashboard.html" class="${activePage==='dashboard'?'active':''}">Home</a>
-    <a href="trade.html" class="${activePage==='trade'?'active':''}">Trade</a>
-    <a href="bots.html">Bots</a>
-    <a href="settings.html">Settings</a>
+    <a href="dashboard.html" class="${page==='dashboard'?'active':''}">Home</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>`;
 }
 
-// ---- UTILS ----
 function fmt(num, dp = 2) { 
   if (num === undefined || num === null) return '—';
   return Number(num).toFixed(dp).replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
