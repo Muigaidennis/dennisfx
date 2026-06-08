@@ -1,9 +1,9 @@
-// ===== ManooFX Shared JS =====
+// ===== ManooFX Shared JS (No-Backend Version) =====
 
 const APP_ID = '33scAN1TBU9sHqZPKckm9';
 const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
-// ---- AUTH ----
+// ---- AUTH & STORAGE ----
 function requireAuth() {
   const active = localStorage.getItem('mfx_active');
   if (!active) { location.href = 'index.html'; return null; }
@@ -22,7 +22,8 @@ function setActive(acc) {
 }
 function isAdmin() {
   const adminId = localStorage.getItem('mfx_admin_id');
-  return getAccounts().some(a => a.account === adminId);
+  const active = getActive();
+  return active && active.account === adminId;
 }
 function logout() {
   localStorage.removeItem('mfx_active');
@@ -31,7 +32,7 @@ function logout() {
   location.href = 'index.html';
 }
 
-// ---- WEBSOCKET ----
+// ---- WEBSOCKET CLASS ----
 class DerivWS {
   constructor() {
     this.ws = null; this.queue = []; this.listeners = {};
@@ -48,7 +49,7 @@ class DerivWS {
     this.ws = new WebSocket(WS_URL);
     this.ws.onopen = () => {
       this.connected = true;
-      // Send authorize request immediately after connection
+      // Authorize immediately
       this._sendRaw({ authorize: this.token });
       this.queue.forEach(m => this._sendRaw(m));
       this.queue = [];
@@ -56,24 +57,16 @@ class DerivWS {
     this.ws.onmessage = (e) => {
       const data = JSON.parse(e.data);
       const type = data.msg_type;
-      
-      // Handle pending promises
       if (data.req_id && this.pending[data.req_id]) {
         const { resolve, reject } = this.pending[data.req_id];
         delete this.pending[data.req_id];
         if (data.error) reject(data.error); else resolve(data);
       }
-      
-      // Emit events to listeners
       if (this.listeners[type]) this.listeners[type].forEach(fn => fn(data));
       if (this.listeners['*']) this.listeners['*'].forEach(fn => fn(data));
     };
-    this.ws.onerror = (e) => {
-      console.error("WebSocket error:", e);
-    };
     this.ws.onclose = () => {
       this.connected = false;
-      // Reconnect after 3 seconds if not intentionally closed
       this.reconnectTimer = setTimeout(() => this._open(), 3000);
     };
   }
@@ -97,7 +90,7 @@ class DerivWS {
     msg.subscribe = 1;
     const type = Object.keys(msg).find(k => !['subscribe','req_id'].includes(k));
     this._sendRaw(msg);
-    this.on(type, callback);
+    if (callback) this.on(type, callback);
   }
 
   on(type, fn) {
@@ -105,33 +98,44 @@ class DerivWS {
     this.listeners[type].push(fn);
   }
 
-  off(type, fn) {
-    if (!this.listeners[type]) return;
-    this.listeners[type] = this.listeners[type].filter(f => f !== fn);
-  }
-
-  forget(id) { this._sendRaw({ forget: id }); }
-  forgetAll(type) { this._sendRaw({ forget_all: type }); }
   close() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     if (this.ws) this.ws.close();
   }
 }
 
-// ---- TOAST ----
-function ensureToastContainer() {
-  let el = document.getElementById('toast-container');
-  if (!el) { el = document.createElement('div'); el.id = 'toast-container'; document.body.appendChild(el); }
-  return el;
+// ---- UI BUILDERS ----
+function buildNav(activePage) {
+  return `<nav class="top-nav">
+    <div class="logo">Manoo<span>FX</span></div>
+    <div class="nav-links">
+      <a href="dashboard.html" class="${activePage==='dashboard'?'active':''}">Dashboard</a>
+      <a href="trade.html" class="${activePage==='trade'?'active':''}">Trade</a>
+    </div>
+  </nav>`;
 }
-function toast(msg, type = 'info', duration = 3500) {
-  const container = ensureToastContainer();
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  const icons = { success: '✓', error: '✕', info: 'ℹ' };
-  t.innerHTML = `<span>${icons[type]||"ℹ"}</span><span>${msg}</span>`;
-  container.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, duration);
+
+function buildSidebar(activePage) {
+  const activeAcc = getActive();
+  return `<aside class="mfx-sidebar">
+    <div class="sidebar-user">
+      <div class="user-id">${activeAcc.account}</div>
+      <div class="user-type">${activeAcc.account.startsWith('VRTC')?'Demo':'Real'} Account</div>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="${activePage==='dashboard'?'active':''}"><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </aside>`;
+}
+
+function buildBottomNav(activePage) {
+  return `<div class="bottom-nav">
+    <a href="dashboard.html" class="${activePage==='dashboard'?'active':''}">Home</a>
+    <a href="trade.html" class="${activePage==='trade'?'active':''}">Trade</a>
+    <a href="bots.html">Bots</a>
+    <a href="settings.html">Settings</a>
+  </div>`;
 }
 
 // ---- UTILS ----
@@ -139,7 +143,21 @@ function fmt(num, dp = 2) {
   if (num === undefined || num === null) return '—';
   return Number(num).toFixed(dp).replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
 }
-function fmtTime(timestamp) { return new Date(timestamp * 1000).toLocaleTimeString(); }
+
+function toast(msg, type = 'info') {
+  console.log(`TOAST [${type}]: ${msg}`);
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
 
 async function switchAccount(account) {
   const accounts = getAccounts();
@@ -149,9 +167,3 @@ async function switchAccount(account) {
     location.reload();
   }
 }
-
-// ---- BUILDERS (Placeholders for UI structure) ----
-function buildNav(activePage) { return ''; }
-function buildSidebar(activePage) { return ''; }
-function buildBottomNav(activePage) { return ''; }
-
