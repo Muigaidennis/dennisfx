@@ -1,39 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ManooFX — Trade Smarter</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet">
 <style>
   :root{--bg:#080c10;--surface:#0e1318;--border:#1a2330;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;--card:#111820;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden;}
+  body{background:var(--bg);color:var(--text);font-family:\'DM Mono\',monospace;min-height:100vh;overflow-x:hidden;}
   .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,180,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,180,0.03) 1px,transparent 1px);background-size:48px 48px;animation:gridMove 20s linear infinite;pointer-events:none;z-index:0;}
   @keyframes gridMove{0%{background-position:0 0;}100%{background-position:48px 48px;}}
   .glow-orb{position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
   .orb1{background:rgba(0,229,180,0.06);top:-200px;left:-100px;}
   .orb2{background:rgba(0,119,255,0.05);bottom:-200px;right:-100px;}
   nav{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:20px 40px;border-bottom:1px solid var(--border);background:rgba(8,12,16,0.8);backdrop-filter:blur(20px);}
-  .logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);}
+  .logo{font-family:\'Syne\',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text);}
   .logo span{color:var(--accent);}
   .nav-tag{font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;}
   .hero{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 70px);padding:60px 24px;text-align:center;}
   .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,180,0.08);border:1px solid rgba(0,229,180,0.2);border-radius:100px;padding:6px 16px;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:32px;}
   .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-  h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,8vw,5.5rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:24px;}
+  h1{font-family:\'Syne\',sans-serif;font-size:clamp(2.8rem,8vw,5.5rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:24px;}
   h1 .line2{color:var(--accent);}
   .hero-sub{font-size:0.95rem;color:var(--muted);max-width:480px;line-height:1.7;margin-bottom:48px;}
   .login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:420px;position:relative;overflow:hidden;}
-  .login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
-  .login-card h2{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:8px;}
+  .login-card::before{content:\'\';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+  .login-card h2{font-family:\'Syne\',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:8px;}
   .login-card p{font-size:0.78rem;color:var(--muted);margin-bottom:28px;line-height:1.6;}
-  .btn-deriv{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:16px 24px;background:var(--accent);color:#000;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .btn-deriv{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:16px 24px;background:var(--accent);color:#000;border:none;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
   .btn-deriv:hover{background:#00ffca;transform:translateY(-1px);box-shadow:0 8px 32px rgba(0,229,180,0.3);}
   .btn-deriv:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
   .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:0.7rem;}
-  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .divider::before,.divider::after{content:\'\';flex:1;height:1px;background:var(--border);}
   .features-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
   .feat{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--muted);}
   .feat-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);}
@@ -66,13 +64,13 @@
   <p class="hero-sub">Professional-grade tools for Deriv markets. Real-time ticks, advanced bots, deep analytics — all in one place.</p>
   <div class="login-card">
     <h2>Connect Your Account</h2>
-    <p>Securely log in via Deriv OAuth 2.0 + PKCE. We never store your credentials.</p>
+    <p>Securely log in via Deriv. No backend required.</p>
     <button class="btn-deriv" id="loginBtn" onclick="startLogin()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"></path></svg>
       <span id="btnText">Login with Deriv</span>
       <div class="spin" id="btnSpin"></div>
     </button>
-    <div class="divider">secure oauth 2.0 + pkce</div>
+    <div class="divider">Direct Token Access</div>
     <div class="features-row">
       <div class="feat"><div class="feat-dot"></div>Real accounts</div>
       <div class="feat"><div class="feat-dot"></div>Demo supported</div>
@@ -84,71 +82,32 @@
 <footer>ManooFX is an independent third-party platform. Not affiliated with Deriv Ltd. &nbsp;|&nbsp; Trading involves risk.</footer>
 
 <script>
-// Redirect if already logged in
-if (localStorage.getItem('mfx_active')) location.href = 'dashboard.html';
+if (localStorage.getItem(\'mfx_active\')) location.href = \'dashboard.html\';
 
-const CLIENT_ID = '33scAN1TBU9sHqZPKckm9';
-const REDIRECT  = 'https://dennisfx-82td.vercel.app/callback.html';
+const CLIENT_ID = \'33scAN1TBU9sHqZPKckm9\';
 
-async function startLogin() {
-  const btn = document.getElementById('loginBtn');
+function startLogin() {
+  const btn = document.getElementById(\'loginBtn\');
   btn.disabled = true;
-  document.getElementById('btnText').textContent = 'Connecting...';
-  document.getElementById('btnSpin').style.display = 'block';
+  document.getElementById(\'btnText\').textContent = \'Connecting...\';
+  document.getElementById(\'btnSpin\').style.display = \'block\';
 
-  try {
-    // Step 1: Generate code_verifier
-    const array = crypto.getRandomValues(new Uint8Array(64));
-    const codeVerifier = Array.from(array)
-      .map(v => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[v % 66])
-      .join('');
-
-    // Step 2: Derive code_challenge = BASE64URL(SHA256(codeVerifier))
-    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
-    const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-    // Step 3: Generate random state for CSRF protection
-    const state = crypto.getRandomValues(new Uint8Array(16))
-      .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-
-    // Step 4: Store verifier and state in sessionStorage before redirecting
-    sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-    sessionStorage.setItem('oauth_state', state);
-
-    // Step 5: Build the exact URL as per Deriv docs
-    const params = new URLSearchParams({
-      response_type:          'code',
-      client_id:              CLIENT_ID,
-      redirect_uri:           REDIRECT,
-      scope:                  'trade account_manage',
-      state:                  state,
-      code_challenge:         codeChallenge,
-      code_challenge_method:  'S256'
-    });
-
-    // Redirect to Deriv authorization page
-    window.location.href = 'https://auth.deriv.com/oauth2/auth?' + params.toString();
-
-  } catch(e) {
-    btn.disabled = false;
-    document.getElementById('btnText').textContent = 'Login with Deriv';
-    document.getElementById('btnSpin').style.display = 'none';
-    alert('Login error: ' + e.message);
-  }
+  // For No-Backend: Use the simple OAuth flow that returns tokens directly in the URL
+  // This is the most common way for static sites without a server.
+  const loginUrl = `https://oauth.deriv.com/oauth2/authorize?app_id=${CLIENT_ID}&l=EN&brand=deriv`;
+  window.location.href = loginUrl;
 }
 
 // Ticker
 const symbols = [
-  {n:'V10 (1s)',v:'1234.56',c:'+0.12%',up:true},{n:'V25 (1s)',v:'3421.10',c:'-0.08%',up:false},
-  {n:'V50 (1s)',v:'5678.90',c:'+0.31%',up:true},{n:'V75 (1s)',v:'8901.23',c:'+0.19%',up:true},
-  {n:'V100 (1s)',v:'12034.45',c:'-0.22%',up:false},{n:'V10',v:'1100.00',c:'+0.05%',up:true},
-  {n:'V25',v:'2800.55',c:'-0.14%',up:false},{n:'V50',v:'5200.11',c:'+0.27%',up:true},
-  {n:'V75',v:'8500.77',c:'+0.09%',up:true},{n:'V100',v:'11800.33',c:'-0.18%',up:false},
+  {n:\'V10 (1s)\',v:\'1234.56\',c:\'+0.12%\',up:true},{n:\'V25 (1s)\',v:\'3421.10\',c:\'-0.08%\',up:false},
+  {n:\'V50 (1s)\',v:\'5678.90\',c:\'+0.31%\',up:true},{n:\'V75 (1s)\',v:\'8901.23\',c:\'+0.19%\',up:true},
+  {n:\'V100 (1s)\',v:\'12034.45\',c:\'-0.22%\',up:false},{n:\'V10\',v:\'1100.00\',c:\'+0.05%\',up:true},
+  {n:\'V25\',v:\'2800.55\',c:\'-0.14%\',up:false},{n:\'V50\',v:\'5200.11\',c:\'+0.27%\',up:true},
+  {n:\'V75\',v:\'8500.77\',c:\'+0.09%\',up:true},{n:\'V100\',v:\'11800.33\',c:\'-0.18%\',up:false},
 ];
-const t = document.getElementById('ticker');
-const items = () => symbols.map(s=>`<div class="tick-item"><span class="tick-name">${s.n}</span><span class="tick-val">${s.v}</span><span class="${s.up?'tick-up':'tick-dn'}">${s.c}</span></div>`).join('');
+const t = document.getElementById(\'ticker\');
+const items = () => symbols.map(s=>`<div class="tick-item"><span class="tick-name">${s.n}</span><span class="tick-val">${s.v}</span><span class="${s.up?\'tick-up\':\'tick-dn\'}">${s.c}</span></div>`).join(\'\');
 t.innerHTML = items()+items();
 </script>
-</body>
-</html>
+</body></html>
