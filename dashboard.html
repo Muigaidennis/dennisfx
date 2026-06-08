@@ -76,6 +76,7 @@ const ws = new DerivWS();
 // Build UI Components
 document.getElementById(\'navHolder\').innerHTML = buildNav(\'dashboard\');
 document.getElementById(\'bottomNavHolder\').innerHTML = buildBottomNav(\'dashboard\');
+document.getElementById(\'sidebarHolder\').innerHTML = buildSidebar(\'dashboard\');
 
 ws.on(\'authorize\', (data) => {
   if (data.error) { toast(\'Auth failed: \' + data.error.message, \'error\'); return; }
