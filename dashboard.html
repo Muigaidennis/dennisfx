@@ -1,403 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ManooFX — Dashboard</title>
-<link rel="stylesheet" href="shared.css"/>
+<link rel="stylesheet" href="shared.css">
 <script src="shared.js"></script>
 <style>
-  /* Balance Hero */
-  .balance-hero {
-    background: linear-gradient(135deg,rgba(0,229,180,0.08),rgba(0,119,255,0.05));
-    border: 1px solid rgba(0,229,180,0.15);
-    border-radius: 18px; padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden;
-  }
-  .balance-hero::before {
-    content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;
-    background:radial-gradient(circle,rgba(0,229,180,0.08),transparent 70%);
-  }
-  .balance-label { font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px; }
-  .balance-amount { font-family:var(--font-display);font-size:2.2rem;font-weight:800;line-height:1;letter-spacing:-0.02em; }
-  .balance-currency { font-size:0.85rem;color:var(--muted);margin-left:4px; }
-  .balance-type { margin-top:6px; }
-
-  /* Account pills */
-  .accs-row { display:flex;gap:8px;margin-top:14px;overflow-x:auto;padding-bottom:4px; }
-  .acc-pill {
-    background:var(--card);border:1px solid var(--border);border-radius:10px;
-    padding:10px 14px;cursor:pointer;flex-shrink:0;min-width:130px;transition:all 0.15s;
-  }
-  .acc-pill:hover { border-color:var(--border2); }
-  .acc-pill.active { border-color:var(--accent);background:rgba(0,229,180,0.05); }
-  .acc-pill-name { font-size:0.62rem;color:var(--muted);margin-bottom:3px; }
-  .acc-pill-bal { font-family:var(--font-display);font-size:1rem;font-weight:700; }
-  .acc-pill-id { font-size:0.6rem;color:var(--muted);margin-top:2px; }
-
-  /* Stats */
-  .stats-row { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
-
-  /* Quick trade */
-  .quick-row { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
-  .quick-btn {
-    padding:14px 8px;border-radius:var(--radius);border:1px solid var(--border);
-    background:var(--card);cursor:pointer;text-align:center;transition:all 0.15s;
-    font-family:var(--font-display);font-size:0.85rem;font-weight:700;
-  }
-  .quick-buy { border-color:rgba(0,229,180,0.2);color:var(--accent); }
-  .quick-buy:hover { background:rgba(0,229,180,0.08); }
-  .quick-sell { border-color:rgba(255,64,96,0.2);color:var(--danger); }
-  .quick-sell:hover { background:rgba(255,64,96,0.08); }
-  .quick-sub { font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);margin-top:3px; }
-
-  /* Open contracts */
-  .contract-row {
-    display:flex;align-items:center;gap:8px;padding:10px 0;
-    border-bottom:1px solid var(--border);font-size:0.72rem;
-  }
-  .contract-row:last-child { border-bottom:none; }
-
-  /* Activity */
-  .activity-item {
-    display:flex;align-items:center;gap:8px;padding:8px 0;
-    border-bottom:1px solid var(--border);font-size:0.72rem;
-  }
-  .activity-item:last-child { border-bottom:none; }
-  .activity-icon {
-    width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
-    justify-content:center;flex-shrink:0;font-size:0.65rem;
-  }
-  .act-buy { background:rgba(0,229,180,0.1);color:var(--accent); }
-  .act-sell { background:rgba(255,64,96,0.1);color:var(--danger); }
-  .activity-info { flex:1;min-width:0; }
-  .activity-label { color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-  .activity-time { font-size:0.6rem;color:var(--muted);margin-top:1px; }
-  .activity-val { font-family:var(--font-display);font-weight:700;font-size:0.8rem;flex-shrink:0; }
+  :root { --bg: #080c10; --surface: #0e1318; --border: #1a2330; --accent: #00e5b4; --text: #e8edf2; --muted: #5a6a7a; --card: #111820; --danger: #ff4060; --radius: 12px; --font-display: \'Syne\', sans-serif; --font-mono: \'DM Mono\', monospace; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-mono); margin: 0; padding: 0; }
+  .mfx-layout { padding: 20px; max-width: 1200px; margin: 0 auto; padding-bottom: 80px; }
+  .mfx-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+  .stat-val { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
+  .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; }
+  .up { color: var(--accent); } .dn { color: var(--danger); }
+  .tag { padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
+  .tag-green { background: rgba(0,229,180,0.1); color: var(--accent); }
+  .tag-blue { background: rgba(0,119,255,0.1); color: #0077ff; }
+  .acc-pill { background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 10px; cursor: pointer; min-width: 150px; flex-shrink: 0; transition: all 0.2s; }
+  .acc-pill.active { border-color: var(--accent); background: rgba(0,229,180,0.05); box-shadow: 0 0 15px rgba(0,229,180,0.1); }
+  .accs-row { display: flex; gap: 12px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
+  .accs-row::-webkit-scrollbar { display: none; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px; z-index: 100; }
+  .bottom-nav a { color: var(--muted); text-decoration: none; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bottom-nav a.active { color: var(--accent); font-weight: 700; }
 </style>
 </head>
 <body>
 <div id="navHolder"></div>
 <div class="mfx-layout">
   <div id="sidebarHolder"></div>
-  <main class="mfx-main">
-
-    <div class="page-header">
+  <main>
+    <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
       <div>
-        <div class="page-title">Dashboard</div>
-        <div class="page-sub">Account overview</div>
+        <h1 style="font-family:var(--font-display); margin:0; font-size:1.5rem;">Dashboard</h1>
+        <div id="serverTime" style="font-size:0.65rem; color:var(--muted);">Connecting...</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="live-dot">Live</div>
-        <span id="serverTime" style="font-size:0.62rem;color:var(--muted)"></span>
+      <div class="tag tag-green">LIVE</div>
+    </header>
+
+    <div class="mfx-card" style="background:linear-gradient(135deg, rgba(0,229,180,0.08), transparent); border-color: rgba(0,229,180,0.2);">
+      <div class="stat-label">Active Balance</div>
+      <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0;">
+        <span class="stat-val" id="mainBalance">—</span>
+        <span id="mainCurrency" style="color:var(--muted); font-weight:700;"></span>
+      </div>
+      <div id="accTypeTag"></div>
+      
+      <div style="margin-top:25px;">
+        <div class="stat-label" style="margin-bottom:10px;">Switch Account</div>
+        <div class="accs-row" id="accsList"></div>
       </div>
     </div>
 
-    <!-- Balance Hero -->
-    <div class="balance-hero">
-      <div class="balance-label">Active Balance</div>
-      <div>
-        <span class="balance-amount" id="mainBalance">—</span>
-        <span class="balance-currency" id="mainCurrency"></span>
-      </div>
-      <div class="balance-type" id="accTypeTag"></div>
-      <!-- All account pills -->
-      <div class="accs-row" id="accsList"></div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
       <div class="mfx-card">
-        <div class="mfx-card-title">Open</div>
-        <div class="stat-val" id="openCount">—</div>
-        <div class="stat-label">contracts</div>
+        <div class="stat-label">Open Contracts</div>
+        <div class="stat-val" id="openCount">0</div>
       </div>
       <div class="mfx-card">
-        <div class="mfx-card-title">Today P&L</div>
+        <div class="stat-label">Today P&L</div>
         <div class="stat-val" id="todayPnl">—</div>
-        <div class="stat-label">unrealized</div>
-      </div>
-      <div class="mfx-card">
-        <div class="mfx-card-title">Trades</div>
-        <div class="stat-val" id="tradesToday">—</div>
-        <div class="stat-label">today</div>
-      </div>
-      <div class="mfx-card">
-        <div class="mfx-card-title">Market</div>
-        <div class="stat-val" style="font-size:0.85rem;margin-top:4px;" id="marketStatus">—</div>
-        <div class="stat-label">status</div>
       </div>
     </div>
 
-    <!-- Quick Trade -->
-    <div class="mfx-card" style="margin-bottom:14px;">
-      <div class="mfx-card-title">Quick Trade</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
-        <div>
-          <label class="field-label">Symbol</label>
-          <select class="mfx-select" id="qtSymbol">
-            <option value="R_10">Volatility 10</option>
-            <option value="R_25">Volatility 25</option>
-            <option value="R_50" selected>Volatility 50</option>
-            <option value="R_75">Volatility 75</option>
-            <option value="R_100">Volatility 100</option>
-            <option value="1HZ10V">Vol 10 (1s)</option>
-            <option value="1HZ25V">Vol 25 (1s)</option>
-            <option value="1HZ50V">Vol 50 (1s)</option>
-            <option value="1HZ75V">Vol 75 (1s)</option>
-            <option value="1HZ100V">Vol 100 (1s)</option>
-          </select>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div>
-            <label class="field-label">Stake (USD)</label>
-            <input class="mfx-input" type="number" id="qtStake" value="1" min="0.35" step="0.01"/>
-          </div>
-          <div>
-            <label class="field-label">Duration</label>
-            <input class="mfx-input" type="number" id="qtDur" value="5" min="1"/>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div>
-            <label class="field-label">Unit</label>
-            <select class="mfx-select" id="qtDurUnit">
-              <option value="t">Ticks</option>
-              <option value="s">Seconds</option>
-              <option value="m">Minutes</option>
-            </select>
-          </div>
-          <div>
-            <label class="field-label">Type</label>
-            <select class="mfx-select" id="qtType">
-              <option value="CALL">Rise</option>
-              <option value="PUT">Fall</option>
-              <option value="DIGITEVEN">Even</option>
-              <option value="DIGITODD">Odd</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div id="qtPayout" style="font-size:0.68rem;color:var(--muted);margin-bottom:10px;">Est. payout: —</div>
-      <div class="quick-row">
-        <button class="quick-btn quick-buy" onclick="quickTrade('buy')">▲ BUY<div class="quick-sub">Rise/Even</div></button>
-        <button class="quick-btn quick-sell" onclick="quickTrade('sell')">▼ SELL<div class="quick-sub">Fall/Odd</div></button>
-      </div>
+    <div class="mfx-card">
+      <div class="stat-label" style="margin-bottom:15px;">Market Snapshot</div>
+      <div id="marketSnap"></div>
     </div>
-
-    <!-- Open Contracts -->
-    <div class="mfx-card" style="margin-bottom:14px;">
-      <div class="mfx-card-title">Open Contracts <span class="live-dot" style="margin-left:auto;font-size:0.58rem">Live</span></div>
-      <div id="openContracts"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
-    </div>
-
-    <!-- Recent Transactions -->
-    <div class="mfx-card" style="margin-bottom:14px;">
-      <div class="mfx-card-title">Recent Transactions</div>
-      <div id="recentTx"><div class="mfx-loader"><div class="spin"></div>Loading...</div></div>
-    </div>
-
-    <!-- Market Snapshot -->
-    <div class="mfx-card" style="margin-bottom:14px;">
-      <div class="mfx-card-title">Market Snapshot <span class="live-dot" style="margin-left:auto;font-size:0.58rem">Live</span></div>
-      <div id="marketSnap"><div class="mfx-loader"><div class="spin"></div>Connecting...</div></div>
-    </div>
-
   </main>
 </div>
 <div id="bottomNavHolder"></div>
 
 <script>
 const active = requireAuth();
-document.getElementById('navHolder').innerHTML = buildNav('dashboard');
-document.getElementById('sidebarHolder').innerHTML = buildSidebar('dashboard');
-document.getElementById('bottomNavHolder').innerHTML = buildBottomNav('dashboard');
-
 const ws = new DerivWS();
-ws.connect(active.token);
 
-ws.on('authorize', async (data) => {
-  if (data.error) { toast('Auth failed: ' + data.error.message, 'error'); return; }
-  toast('Connected to Deriv', 'success');
+// Build UI Components
+document.getElementById(\'navHolder\').innerHTML = buildNav(\'dashboard\');
+document.getElementById(\'bottomNavHolder\').innerHTML = buildBottomNav(\'dashboard\');
 
-  // Fetch balance for all accounts
-  try {
-    const balRes = await ws.send({ balance: 1, account: 'all' });
-    updateBalances(balRes.balance);
-    // Subscribe to live balance updates
-    ws.subscribe({ balance: 1, account: 'all' }, (d) => { if(d.balance) updateBalances(d.balance); });
-  } catch(e) { toast('Balance error: ' + e.message, 'error'); }
-
-  // Open contracts
-  try {
-    const portRes = await ws.send({ portfolio: 1 });
-    const contracts = portRes.portfolio?.contracts || [];
-    renderOpenContracts(contracts);
-    document.getElementById('openCount').textContent = contracts.length;
-  } catch(e) { document.getElementById('openContracts').innerHTML = '<div class="mfx-loader">No open contracts</div>'; }
-
-  // Recent transactions
-  try {
-    const stmt = await ws.send({ statement: 1, limit: 8 });
-    renderRecentTx(stmt.statement?.transactions || []);
-    const todayTxs = (stmt.statement?.transactions || []).filter(t => {
-      return new Date(t.transaction_time*1000).toDateString() === new Date().toDateString();
-    });
-    document.getElementById('tradesToday').textContent = todayTxs.length;
-  } catch(e) {}
-
-  // Market status
-  document.getElementById('marketStatus').innerHTML = '<span class="tag tag-green">● Open</span>';
-
-  // Market snapshot ticks
+ws.on(\'authorize\', (data) => {
+  if (data.error) { toast(\'Auth failed: \' + data.error.message, \'error\'); return; }
+  
+  // 1. Fetch balance for ALL accounts to show in switcher
+  ws.send({ balance: 1, account: \'all\' });
+  
+  // 2. Subscribe to balance updates for ALL accounts
+  ws.subscribe({ balance: 1, account: \'all\' });
+  
+  // 3. Get portfolio for open contracts
+  ws.send({ portfolio: 1 });
+  
+  // 4. Subscribe to open contract updates for P&L
+  ws.subscribe({ proposal_open_contract: 1 });
+  
+  // 5. Load market data
   loadMarketSnap();
-
-  // Subscribe open contract PnL
-  ws.subscribe({ proposal_open_contract: 1 }, (d) => {
-    const c = d.proposal_open_contract;
-    if (!c) return;
-    const el = document.getElementById('pnl_'+c.contract_id);
-    if (el) {
-      el.textContent = (c.profit>=0?'+':'')+fmt(c.profit)+' '+c.currency;
-      el.className = 'activity-val '+(c.profit>=0?'up':'dn');
-    }
-    document.getElementById('todayPnl').textContent = (c.profit>=0?'+':'')+fmt(c.profit);
-    document.getElementById('todayPnl').className = 'stat-val '+(c.profit>=0?'up':'dn');
-  });
-
-  // Proposal
-  setTimeout(getProposal, 1500);
+  
+  // 6. Start server time
+  ws.send({ time: 1 });
 });
 
-// Server time
-ws.on('time', d => {
-  document.getElementById('serverTime').textContent = new Date(d.time*1000).toUTCString().slice(17,25)+' UTC';
+ws.on(\'balance\', (data) => {
+  if (data.balance) updateBalances(data.balance);
 });
-ws.send({ time: 1 });
-setInterval(()=>ws.send({time:1}), 30000);
+
+ws.on(\'portfolio\', (data) => {
+  const count = data.portfolio?.contracts?.length || 0;
+  document.getElementById(\'openCount\').textContent = count;
+});
+
+ws.on(\'proposal_open_contract\', (data) => {
+  const c = data.proposal_open_contract;
+  if (c) {
+    document.getElementById(\'todayPnl\').textContent = (c.profit >= 0 ? \'+\' : \'\') + fmt(c.profit);
+    document.getElementById(\'todayPnl\').className = \'stat-val \' + (c.profit >= 0 ? \'up\' : \'dn\');
+  }
+});
+
+ws.on(\'time\', (data) => {
+  document.getElementById(\'serverTime\').textContent = new Date(data.time * 1000).toUTCString().slice(5, 25) + \' UTC\';
+});
 
 function updateBalances(balance) {
   const accounts = getAccounts();
   const activeAcc = getActive();
-  const curr = balance.accounts?.[activeAcc.account];
-  if (curr) {
-    document.getElementById('mainBalance').textContent = fmt(curr.balance);
-    document.getElementById('mainCurrency').textContent = curr.currency;
-    const isDemo = activeAcc.account.startsWith('VRTC');
-    document.getElementById('accTypeTag').innerHTML =
-      `<span class="tag ${isDemo?'tag-blue':'tag-green'}">${isDemo?'🔵 Demo Account':'🟢 Real Account'}</span>`;
+  
+  // Update main display for active account
+  const activeBalData = balance.accounts?.[activeAcc.account];
+  if (activeBalData) {
+    document.getElementById(\'mainBalance\').textContent = fmt(activeBalData.balance);
+    document.getElementById(\'mainCurrency\').textContent = activeBalData.currency;
+    const isDemo = activeAcc.account.startsWith(\'VRTC\');
+    document.getElementById(\'accTypeTag\').innerHTML = `<span class="tag ${isDemo?\'tag-blue\':\'tag-green\'}">${isDemo?\'🔵 Demo Account\':\'🟢 Real Account\'}</span>`;
   }
-  // Account pills
-  const list = document.getElementById('accsList');
+
+  // Update the account switcher list
+  const list = document.getElementById(\'accsList\');
   list.innerHTML = accounts.map(a => {
-    const bal = balance.accounts?.[a.account];
-    const isDemo = a.account.startsWith('VRTC');
     const isCurr = a.account === activeAcc.account;
-    return `<div class="acc-pill ${isCurr?'active':''}" onclick="switchAccount('${a.account}')">
-      <div class="acc-pill-name">${isDemo?'Demo':'Real'} · ${a.currency||'USD'}</div>
-      <div class="acc-pill-bal ${isCurr?'up':''}">${bal?fmt(bal.balance):'—'}</div>
-      <div class="acc-pill-id">${a.account}</div>
+    const balInfo = balance.accounts?.[a.account];
+    const balVal = balInfo ? balInfo.balance : \'—\';
+    const isDemo = a.account.startsWith(\'VRTC\');
+    
+    return `<div class="acc-pill ${isCurr?\'active\':\'\'}" onclick="switchAccount(\'${a.account}\')">
+      <div style="font-size:0.6rem; color:var(--muted); margin-bottom:4px;">${isDemo?\'DEMO\':\'REAL\'} · ${a.account}</div>
+      <div style="font-weight:700; font-size:0.9rem;">${fmt(balVal)} <span style="font-size:0.7rem; color:var(--muted);">${a.currency||\'USD\'}</span></div>
     </div>`;
-  }).join('');
-  // Also update dropdown balances
-  accounts.forEach(a => {
-    const bal = balance.accounts?.[a.account];
-    const el = document.getElementById('bal_'+a.account);
-    if (el && bal) el.textContent = fmt(bal.balance)+' '+bal.currency;
-  });
-}
-
-function renderOpenContracts(contracts) {
-  const el = document.getElementById('openContracts');
-  if (!contracts.length) {
-    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.72rem;">No open contracts</div>';
-    return;
-  }
-  el.innerHTML = contracts.slice(0,5).map(c=>`
-    <div class="contract-row">
-      <div style="flex:1;">
-        <div style="font-family:var(--font-display);font-weight:600;font-size:0.8rem;">${c.symbol}</div>
-        <div style="font-size:0.62rem;color:var(--muted);">${c.contract_type} · ${fmt(c.buy_price)} USD</div>
-      </div>
-      <div class="activity-val up" id="pnl_${c.contract_id}">—</div>
-      <button class="btn btn-danger" style="padding:4px 10px;font-size:0.65rem;" onclick="sellContract(${c.contract_id})">Sell</button>
-    </div>`).join('');
-}
-
-async function sellContract(id) {
-  try {
-    const res = await ws.send({ sell: id, price: 0 });
-    if (res.sell) { toast('Sold for '+fmt(res.sell.sold_for), 'success'); setTimeout(()=>location.reload(),1000); }
-  } catch(e) { toast('Sell failed: '+e.message,'error'); }
-}
-
-function renderRecentTx(txs) {
-  const el = document.getElementById('recentTx');
-  if (!txs.length) { el.innerHTML = '<div class="mfx-loader">No transactions yet</div>'; return; }
-  el.innerHTML = txs.map(t => {
-    const isBuy = t.action_type==='buy';
-    return `<div class="activity-item">
-      <div class="activity-icon ${isBuy?'act-buy':'act-sell'}">${isBuy?'▲':'▼'}</div>
-      <div class="activity-info">
-        <div class="activity-label">${(t.longcode||t.action_type).slice(0,45)}...</div>
-        <div class="activity-time">${fmtTime(t.transaction_time)}</div>
-      </div>
-      <div class="activity-val ${isBuy?'dn':'up'}">${isBuy?'-':'+'} ${fmt(Math.abs(t.amount))}</div>
-    </div>`;
-  }).join('');
+  }).join(\'\');
 }
 
 async function loadMarketSnap() {
-  const syms = ['R_10','R_25','R_50','R_75','R_100','1HZ10V','1HZ100V'];
-  const snapEl = document.getElementById('marketSnap');
-  snapEl.innerHTML = syms.map(s=>`
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:0.72rem;">
-      <span style="color:var(--muted)">${s}</span>
-      <span id="snap_${s}" style="font-family:var(--font-display);font-weight:600">—</span>
-    </div>`).join('');
+  const syms = [\'R_10\', \'R_25\', \'R_50\', \'R_100\', \'1HZ10V\', \'1HZ100V\'];
+  const snapEl = document.getElementById(\'marketSnap\');
+  snapEl.innerHTML = syms.map(s => `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border);">
+    <span style="color:var(--muted); font-size:0.75rem;">${s}</span>
+    <span id="snap_${s}" style="font-weight:700; font-size:0.85rem;">—</span>
+  </div>`).join(\'\');
+
   syms.forEach(sym => {
     ws.subscribe({ ticks: sym }, d => {
       if (d.tick) {
-        const el = document.getElementById('snap_'+sym);
+        const el = document.getElementById(\'snap_\' + sym);
         if (el) el.textContent = fmt(d.tick.quote, 3);
       }
     });
   });
 }
 
-let proposalTimer = null;
-async function getProposal() {
-  const sym = document.getElementById('qtSymbol').value;
-  const stake = parseFloat(document.getElementById('qtStake').value)||1;
-  const dur = parseInt(document.getElementById('qtDur').value)||5;
-  const unit = document.getElementById('qtDurUnit').value;
-  const type = document.getElementById('qtType').value;
-  try {
-    const res = await ws.send({ proposal:1, amount:stake, basis:'stake', contract_type:type, currency:'USD', duration:dur, duration_unit:unit, symbol:sym });
-    if (res.proposal) document.getElementById('qtPayout').textContent = `Est. payout: ${fmt(res.proposal.payout)} USD`;
-  } catch(e) {}
-}
-
-['qtSymbol','qtStake','qtDur','qtDurUnit','qtType'].forEach(id => {
-  document.getElementById(id).addEventListener('change', ()=>{
-    clearTimeout(proposalTimer);
-    proposalTimer = setTimeout(getProposal, 500);
-  });
-});
-
-async function quickTrade(direction) {
-  const sym = document.getElementById('qtSymbol').value;
-  const stake = parseFloat(document.getElementById('qtStake').value)||1;
-  const dur = parseInt(document.getElementById('qtDur').value)||5;
-  const unit = document.getElementById('qtDurUnit').value;
-  let type = document.getElementById('qtType').value;
-  if (direction==='sell' && type==='CALL') type='PUT';
-  if (direction==='buy' && type==='PUT') type='CALL';
-  try {
-    const prop = await ws.send({ proposal:1, amount:stake, basis:'stake', contract_type:type, currency:'USD', duration:dur, duration_unit:unit, symbol:sym });
-    if (prop.error) { toast(prop.error.message,'error'); return; }
-    const buy = await ws.send({ buy:prop.proposal.id, price:prop.proposal.ask_price });
-    if (buy.buy) { toast(`✓ Contract #${buy.buy.contract_id} bought!`, 'success'); setTimeout(()=>location.reload(),1500); }
-  } catch(e) { toast('Trade failed: '+(e.message||e.code),'error'); }
-}
+// Initialize connection
+ws.connect(active.token);
+setInterval(() => ws.send({ time: 1 }), 30000);
 </script>
-</body>
-</html>
+</body></html>
