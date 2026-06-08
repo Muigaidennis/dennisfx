@@ -3,141 +3,60 @@
 <title>ManooFX — Connecting...</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&amp;family=DM+Mono:wght@400&amp;display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#080c10;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;--danger:#ff4060;--border:#1a2330;}
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:\'DM Mono\',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:24px;}
-  .logo{font-family:\'Syne\',sans-serif;font-size:1.5rem;font-weight:800;}
-  .logo span{color:var(--accent);}
-  .spinner{width:40px;height:40px;border:2px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  :root{--bg:#080c10;--accent:#00e5b4;--text:#e8edf2;--muted:#5a6a7a;}
+  body{background:var(--bg);color:var(--text);font-family:\'DM Mono\',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
+  .spinner{width:40px;height:40px;border:3px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  .msg{font-size:0.78rem;color:var(--muted);letter-spacing:0.08em;text-align:center;}
-  .steps{font-size:0.68rem;color:var(--muted);text-align:left;max-width:280px;line-height:2;}
-  .step{padding:2px 0;transition:color 0.2s;}
-  .step.done{color:var(--accent);}
-  .step.active{color:var(--text);font-weight:600;}
-  .err{color:var(--danger);font-size:0.75rem;text-align:center;max-width:360px;line-height:1.8;background:rgba(255,64,96,0.06);border:1px solid rgba(255,64,96,0.2);border-radius:12px;padding:16px;display:none;word-break:break-all;}
 </style>
 </head>
 <body>
-<div class="logo">Manoo<span>FX</span></div>
-<div class="spinner" id="spinner"></div>
-<div class="msg" id="msg">Authenticating with Deriv...</div>
-<div class="steps" id="steps">
-  <div class="step active" id="s1">① Receiving auth code</div>
-  <div class="step" id="s2">② Exchanging for token</div>
-  <div class="step" id="s3">③ Loading accounts</div>
-  <div class="step" id="s4">④ Redirecting to dashboard</div>
-</div>
-<div class="err" id="errBox" style="display:none;"></div>
+<div class="logo" style="font-family:\'Syne\'; font-weight:800; font-size:1.5rem;">Manoo<span>FX</span></div>
+<div class="spinner"></div>
+<div id="status" style="font-size:0.8rem; color:var(--muted);">Processing Deriv Login...</div>
 
 <script>
-const CLIENT_ID = \'33scAN1TBU9sHqZPKckm9\';
-const REDIRECT  = \'https://dennisfx-82td.vercel.app/callback.html\';
-
-function setStep(n) {
-  for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById(\'s\' + i);
-    if (i < n) el.className = \'step done\';
-    else if (i === n) el.className = \'step active\';
-    else el.className = \'step\';
-  }
-}
-
-function showError(msg) {
-  document.getElementById(\'spinner\').style.display = \'none\';
-  document.getElementById(\'msg\').style.display = \'none\';
-  document.getElementById(\'steps\').style.display = \'none\';
-  const errBox = document.getElementById(\'errBox\');
-  errBox.style.display = \'block\';
-  errBox.innerHTML = `<strong>Login Failed</strong><br><br>${msg}<br><br><a href="index.html" style="color:var(--accent);">← Try Again</a>`;
-}
-
 async function handleCallback() {
   const params = new URLSearchParams(window.location.search);
-  const code   = params.get(\'code\');
-  const state  = params.get(\'state\');
-  const error  = params.get(\'error\');
-
-  if (error) { showError(\'Deriv error: \' + (params.get(\'error_description\') || error)); return; }
-  if (!code) { showError(\'No authorization code received. Please try again.\'); return; }
-
-  setStep(1);
-
-  const savedState   = sessionStorage.getItem(\'oauth_state\');
-  const codeVerifier = sessionStorage.getItem(\'pkce_code_verifier\');
-
-  if (savedState && state !== savedState) {
-    showError(\'Security check failed. Please try logging in again.\');
-    return;
+  const accounts = [];
+  
+  // Deriv redirects with parameters like acct1, token1, cur1, acct2, token2, etc.
+  for (let i = 1; i <= 10; i++) {
+    const acc = params.get(\'acct\' + i);
+    const tok = params.get(\'token\' + i);
+    const cur = params.get(\'cur\' + i);
+    if (acc && tok) {
+      accounts.push({ 
+        account: acc, 
+        token: tok, 
+        currency: cur || \'USD\', 
+        type: acc.startsWith(\'VRTC\') ? \'demo\' : \'real\' 
+      });
+    }
   }
 
-  // Step 2: Exchange code for token via WebSocket (No-Backend Flow)
-  setStep(2);
-  document.getElementById(\'msg\').textContent = \'Exchanging token via WebSocket...\';
-
-  const ws = new WebSocket(\'wss://ws.derivws.com/websockets/v3?app_id=\' + CLIENT_ID);
-
-  ws.onopen = () => {
-    // Standard OAuth 2.0 token exchange via WebSocket for Deriv
-    const exchangeRequest = {
-      oauth_token: code, // In Deriv\'s WS API, you often pass the code as oauth_token for certain flows
-      // However, for pure OAuth 2.0 PKCE, the exchange usually happens via POST.
-      // Since there\'s no backend, we\'ll use the legacy method of passing tokens in the URL if available,
-      // OR use the proper authorize call if the "code" is actually a token (common in some Deriv apps).
-      // BUT for real PKCE without backend, we MUST use the authorize call with the token received.
-      // In Deriv\'s OAuth redirect, if you don\'t use PKCE, you get tokens directly in the URL (acct1=token1&acct2=token2).
-      // Since you ARE using PKCE, you get a "code". 
-      // WITHOUT A BACKEND, you cannot securely exchange a "code" for a "token" because it requires a client_secret.
-      // IF YOU WANT NO BACKEND, you should use the simple "Implicit Grant" flow or the direct token redirect.
-    };
+  if (accounts.length > 0) {
+    document.getElementById(\'status\').textContent = `Found ${accounts.length} accounts. Redirecting...`;
     
-    // Let\'s check if the user actually received tokens in the URL instead of a code
-    const accounts = [];
-    for (let i = 1; i <= 10; i++) {
-      const acc = params.get(\'acct\' + i);
-      const tok = params.get(\'token\' + i);
-      const cur = params.get(\'cur\' + i);
-      if (acc && tok) {
-        accounts.push({ account: acc, token: tok, currency: cur || \'USD\', type: acc.startsWith(\'VRTC\') ? \'demo\' : \'real\' });
-      }
-    }
+    // Save all accounts
+    localStorage.setItem(\'mfx_accounts\', JSON.stringify(accounts));
+    
+    // Set the first demo account as active by default, or the first real if no demo
+    const demo = accounts.find(a => a.account.startsWith(\'VRTC\'));
+    const active = demo || accounts[0];
+    
+    localStorage.setItem(\'mfx_active\', JSON.stringify(active));
+    localStorage.setItem(\'mfx_access_token\', active.token);
 
-    if (accounts.length > 0) {
-      finalizeLogin(accounts);
-    } else {
-      showError(\'No accounts/tokens found in redirect. For a no-backend setup, ensure your Deriv App is configured for "Redirect with Tokens" or use a backend for PKCE exchange.\');
-    }
-  };
-
-  ws.onerror = (e) => showError(\'WebSocket connection failed.\');
-}
-
-function finalizeLogin(accounts) {
-  setStep(3);
-  document.getElementById(\'msg\').textContent = \'Saving accounts...\';
-  
-  localStorage.setItem(\'mfx_accounts\', JSON.stringify(accounts));
-  localStorage.setItem(\'mfx_access_token\', accounts[0].token);
-
-  const demo   = accounts.find(a => a.account?.startsWith(\'VRTC\'));
-  const active = demo || accounts[0];
-  localStorage.setItem(\'mfx_active\', JSON.stringify(active));
-
-  if (!localStorage.getItem(\'mfx_admin_id\')) {
-    localStorage.setItem(\'mfx_admin_id\', accounts[0].account);
+    // Give it a small delay to ensure storage is written
+    setTimeout(() => {
+      window.location.href = \'dashboard.html\';
+    }, 1500);
+  } else {
+    document.getElementById(\'status\').innerHTML = `<span style="color:#ff4060">No accounts found in redirect.</span><br><br><a href="index.html" style="color:var(--accent)">Go Back</a>`;
+    console.error("No account parameters found in URL:", window.location.search);
   }
-
-  setStep(4);
-  document.getElementById(\'msg\').textContent = \'Welcome! Loading dashboard...\';
-  
-  sessionStorage.removeItem(\'pkce_code_verifier\');
-  sessionStorage.removeItem(\'oauth_state\');
-
-  setTimeout(() => location.href = \'dashboard.html\', 1000);
 }
 
 handleCallback();
 </script>
-
-
 </body></html>
