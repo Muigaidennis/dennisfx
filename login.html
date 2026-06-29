@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ManooFX – Login / Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0a1a;
+      --surface:   rgba(255,255,255,0.04);
+      --border:    rgba(255,255,255,0.08);
+      --purple:    #7c3aed;
+      --purple-lt: #a855f7;
+      --pink:      #ec4899;
+      --pink-lt:   #f472b6;
+      --white:     #f8f4ff;
+      --muted:     #9480b8;
+      --input-bg:  rgba(255,255,255,0.06);
+      --radius:    16px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED BACKGROUND ── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #7c3aed, transparent 70%);
+      top: -150px; left: -150px;
+      animation-duration: 14s;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #ec4899, transparent 70%);
+      bottom: -100px; right: -100px;
+      animation-duration: 10s; animation-delay: -5s;
+    }
+    .orb-3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, #a855f7, transparent 70%);
+      top: 50%; left: 55%;
+      transform: translate(-50%, -50%);
+      animation-duration: 16s; animation-delay: -3s;
+      opacity: 0.2;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, 30px) scale(1.08); }
+    }
+
+    /* subtle grid overlay */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 1;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 4rem 6%;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+
+    .left-logo {
+      position: absolute; top: 2rem; left: 6%;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .left-logo span { 
+      background: linear-gradient(135deg, var(--purple-lt), var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .left-eyebrow {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--purple-lt), var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1.2rem;
+    }
+
+    .left-headline {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+    .left-headline em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--purple-lt), var(--pink-lt));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .left-sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 380px;
+      margin-bottom: 3rem;
+    }
+
+    /* feature pills */
+    .feature-list {
+      display: flex; flex-direction: column; gap: 0.85rem;
+    }
+
+    .feature-item {
+      display: flex; align-items: center; gap: 0.85rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.88rem;
+      transition: border-color 0.2s;
+    }
+    .feature-item:hover { border-color: rgba(168,85,247,0.4); }
+
+    .feature-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .fi-purple { background: rgba(124,58,237,0.2); }
+    .fi-pink   { background: rgba(236,72,153,0.2); }
+    .fi-white  { background: rgba(255,255,255,0.08); }
+
+    .feature-text strong { display: block; font-weight: 600; margin-bottom: 0.1rem; }
+    .feature-text span   { color: var(--muted); font-size: 0.8rem; }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 4rem 6%;
+    }
+
+    .auth-card {
+      width: 100%; max-width: 420px;
+    }
+
+    /* tab switcher */
+    .tab-bar {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 2rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.65rem;
+      border: none; background: transparent;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: #fff;
+    }
+
+    /* form panels */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    .form-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem; font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .form-sub {
+      color: var(--muted); font-size: 0.875rem;
+      margin-bottom: 1.8rem;
+    }
+
+    /* input groups */
+    .input-group {
+      margin-bottom: 1.1rem;
+    }
+    .input-group label {
+      display: block;
+      font-size: 0.8rem; font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+      letter-spacing: 0.02em;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap .icon {
+      position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+      font-size: 1rem; opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem 0.75rem 2.6rem;
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-wrap input::placeholder { color: rgba(148,128,184,0.5); }
+    .input-wrap input:focus {
+      border-color: var(--purple-lt);
+      box-shadow: 0 0 0 3px rgba(168,85,247,0.15);
+    }
+
+    .eye-btn {
+      position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 0.85rem;
+      padding: 0;
+    }
+
+    /* remember / forgot row */
+    .form-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; font-size: 0.82rem;
+    }
+    .form-meta label { display: flex; align-items: center; gap: 0.4rem; color: var(--muted); cursor: pointer; }
+    .form-meta input[type="checkbox"] { accent-color: var(--purple-lt); }
+    .form-meta a { color: var(--pink-lt); }
+    .form-meta a:hover { text-decoration: underline; }
+
+    /* submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      border: none; border-radius: 10px;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: opacity 0.2s, transform 0.15s;
+      margin-bottom: 1.4rem;
+    }
+    .btn-submit:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* shimmer effect on button */
+    .btn-submit::after {
+      content: '';
+      position: absolute; top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer {
+      0%   { left: -100%; }
+      50%, 100% { left: 150%; }
+    }
+
+    /* divider */
+    .divider {
+      display: flex; align-items: center; gap: 0.8rem;
+      margin-bottom: 1.4rem;
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+
+    /* deriv OAuth button */
+    .btn-deriv {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1.5px solid rgba(168,85,247,0.4);
+      border-radius: 10px;
+      background: rgba(124,58,237,0.08);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+      transition: all 0.2s;
+      margin-bottom: 1.4rem;
+    }
+    .btn-deriv:hover {
+      background: rgba(124,58,237,0.18);
+      border-color: var(--purple-lt);
+    }
+    .deriv-dot {
+      width: 18px; height: 18px;
+      background: linear-gradient(135deg, #ff4f51, #cc2929);
+      border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700; color: white;
+    }
+
+    /* terms note */
+    .terms-note {
+      text-align: center;
+      font-size: 0.75rem; color: var(--muted);
+      line-height: 1.6;
+    }
+    .terms-note a { color: var(--pink-lt); }
+    .terms-note a:hover { text-decoration: underline; }
+
+    /* password strength bar */
+    .strength-bar {
+      height: 3px; border-radius: 999px;
+      background: var(--border);
+      margin-top: 0.5rem; overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%; border-radius: 999px;
+      width: 0%; transition: width 0.4s, background 0.4s;
+    }
+
+    /* 2-col name row */
+    .name-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+    }
+
+    /* back to site link */
+    .back-link {
+      position: absolute; top: 2rem; right: 6%;
+      font-size: 0.82rem; color: var(--muted);
+      display: flex; align-items: center; gap: 0.4rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--white); }
+
+    /* success state */
+    .success-msg {
+      display: none;
+      text-align: center; padding: 2rem 1rem;
+    }
+    .success-circle {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; margin: 0 auto 1.2rem;
+      animation: pop 0.4s cubic-bezier(.36,1.6,.6,1);
+    }
+    @keyframes pop {
+      from { transform: scale(0); } to { transform: scale(1); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .page { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 3rem 6%; min-height: 100vh; }
+      .back-link { top: 1.2rem; right: 5%; }
+    }
+  </style>
+</head>
+<body id="loginPage">
+
+<!-- Animated background -->
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<div class="page">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left-panel">
+    <div class="left-logo">Manoo<span>FX</span></div>
+
+    <div>
+      <div class="left-eyebrow">AI-Powered Trading</div>
+      <h1 class="left-headline">Trade Smarter.<br/><em>Earn More.</em></h1>
+      <p class="left-sub">ManooFX gives you free AI trading bots, a visual bot builder, and live Deriv market analytics — all in one platform.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon fi-purple">🤖</div>
+          <div class="feature-text">
+            <strong>8 AI Trading Bots</strong>
+            <span>Pre-built strategies, zero coding needed</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon fi-pink">📊</div>
+          <div class="feature-text">
+            <strong>Live Digit Analytics</strong>
+            <span>Real-time frequency charts for all Volatility indices</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon fi-white">🛡️</div>
+          <div class="feature-text">
+            <strong>Secure Deriv OAuth</strong>
+            <span>Login safely — your credentials stay with Deriv</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon fi-purple">⚙️</div>
+          <div class="feature-text">
+            <strong>Visual Bot Builder</strong>
+            <span>Drag, drop, export XML — no code required</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right-panel">
+    <a href="index.html" class="back-link">← Back to site</a>
+
+    <div class="auth-card">
+
+      <!-- Tab switcher -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
+        <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- ── LOGIN FORM ── -->
+      <div class="form-panel active" id="panel-login">
+        <div class="form-title">Welcome back 👋</div>
+        <div class="form-sub">Log in to your ManooFX account to continue trading.</div>
+
+        <!-- Deriv OAuth (primary) -->
+        <button class="btn-deriv" onclick="handleDerivLogin()">
+          <span class="deriv-dot">D</span>
+          Continue with Deriv
+        </button>
+
+        <div class="divider">or log in with email</div>
+
+        <div class="input-group">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <span class="icon">✉️</span>
+            <input type="email" placeholder="you@example.com" id="login-email" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" placeholder="Enter your password" id="login-pass" />
+            <button class="eye-btn" onclick="togglePass('login-pass', this)">👁</button>
+          </div>
+        </div>
+
+        <div class="form-meta">
+          <label><input type="checkbox" /> Remember me</label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button class="btn-submit" onclick="handleLogin()">Log In to ManooFX</button>
+
+        <div class="terms-note">
+          Don't have an account? <a href="#" onclick="switchTab('signup')">Sign up free</a>
+        </div>
+      </div>
+
+      <!-- ── SIGNUP FORM ── -->
+      <div class="form-panel" id="panel-signup">
+        <div class="form-title">Create your account</div>
+        <div class="form-sub">Start trading with AI bots in under 2 minutes.</div>
+
+        <!-- Deriv OAuth (primary) -->
+        <button class="btn-deriv" onclick="handleDerivLogin()">
+          <span class="deriv-dot">D</span>
+          Sign up with Deriv
+        </button>
+
+        <div class="divider">or sign up with email</div>
+
+        <div class="name-row">
+          <div class="input-group">
+            <label>First Name</label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" placeholder="John" id="signup-first" />
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Last Name</label>
+            <div class="input-wrap">
+              <span class="icon">👤</span>
+              <input type="text" placeholder="Doe" id="signup-last" />
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <span class="icon">✉️</span>
+            <input type="email" placeholder="you@example.com" id="signup-email" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" placeholder="Create a strong password" id="signup-pass" oninput="checkStrength(this.value)" />
+            <button class="eye-btn" onclick="togglePass('signup-pass', this)">👁</button>
+          </div>
+          <div class="strength-bar">
+            <div class="strength-fill" id="strength-fill"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Confirm Password</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" placeholder="Repeat your password" id="signup-confirm" />
+            <button class="eye-btn" onclick="togglePass('signup-confirm', this)">👁</button>
+          </div>
+        </div>
+
+        <button class="btn-submit" onclick="handleSignup()" style="margin-top:0.5rem;">Create Free Account</button>
+
+        <div class="terms-note">
+          By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.<br/>
+          Already have an account? <a href="#" onclick="switchTab('login')">Log in</a>
+        </div>
+      </div>
+
+      <!-- ── SUCCESS STATE ── -->
+      <div class="success-msg" id="success-msg">
+        <div class="success-circle">✓</div>
+        <div class="form-title" style="margin-bottom:0.5rem;">You're in!</div>
+        <div class="form-sub">Redirecting to your dashboard...</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tab switching
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
+    });
+    document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+    document.getElementById('panel-signup').classList.toggle('active', tab === 'signup');
+    document.getElementById('success-msg').style.display = 'none';
+  }
+
+  // Toggle password visibility
+  function togglePass(id, btn) {
+    const input = document.getElementById(id);
+    const isPass = input.type === 'password';
+    input.type = isPass ? 'text' : 'password';
+    btn.textContent = isPass ? '🙈' : '👁';
+  }
+
+  // Password strength
+  function checkStrength(val) {
+    const fill = document.getElementById('strength-fill');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['#f06060','#f0b429','#7c3aed','#10b981'];
+    const widths  = ['25%','50%','75%','100%'];
+    fill.style.width = val.length ? widths[score - 1] || '10%' : '0%';
+    fill.style.background = val.length ? colors[score - 1] || '#f06060' : 'transparent';
+  }
+
+  // Deriv OAuth (placeholder — wire up App ID later)
+  function handleDerivLogin() {
+    const APP_ID = '33scAN1TBU9sHqZPKckm9';
+    const redirect = encodeURIComponent(window.location.origin + '/dashboard.html');
+    alert('Deriv OAuth will redirect to:\nhttps://oauth.deriv.com/oauth2/authorize?app_id=' + APP_ID + '\n\n(Wire up backend to activate)');
+  }
+
+  // Login handler (frontend only for now)
+  function handleLogin() {
+    const email = document.getElementById('login-email').value;
+    const pass  = document.getElementById('login-pass').value;
+    if (!email || !pass) { alert('Please fill in all fields.'); return; }
+    showSuccess();
+  }
+
+  // Signup handler (frontend only for now)
+  function handleSignup() {
+    const first   = document.getElementById('signup-first').value;
+    const email   = document.getElementById('signup-email').value;
+    const pass    = document.getElementById('signup-pass').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    if (!first || !email || !pass) { alert('Please fill in all fields.'); return; }
+    if (pass !== confirm) { alert('Passwords do not match.'); return; }
+    showSuccess();
+  }
+
+  function showSuccess() {
+    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('.tab-bar').style.display = 'none';
+    const msg = document.getElementById('success-msg');
+    msg.style.display = 'block';
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+  }
+</script>
+<script src="js/deriv.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
