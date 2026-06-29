@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ManooFX – Markets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0a1a;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--purple:#7c3aed;--purple-lt:#a855f7;--pink:#ec4899;--pink-lt:#f472b6;--white:#f8f4ff;--muted:#9480b8;--card:rgba(255,255,255,0.03);--radius:14px;--sidebar:240px}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden}
+    .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.18;animation:drift 14s ease-in-out infinite alternate}
+    .orb-1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;left:-100px}
+    .orb-2{width:500px;height:500px;background:radial-gradient(circle,#ec4899,transparent 70%);bottom:-100px;right:-100px;animation-delay:-6s}
+    @keyframes drift{from{transform:translate(0,0)}to{transform:translate(30px,20px)}}
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:rgba(13,10,26,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;backdrop-filter:blur(20px)}
+    .sidebar-logo{padding:1.5rem 1.5rem 1rem;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple-lt),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border);margin-bottom:0.5rem}
+    .nav-section{padding:0.5rem 0.75rem;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;margin:0 0.5rem;border-radius:10px;font-size:0.875rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none}
+    .nav-item:hover{background:rgba(168,85,247,0.1);color:var(--white)}
+    .nav-item.active{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));color:var(--white);border:1px solid rgba(168,85,247,0.2)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid var(--border)}
+    .user-pill{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;position:relative;z-index:10}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(13,10,26,0.7);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+    .page-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+    .live-badge{padding:0.3rem 0.8rem;border-radius:999px;font-size:0.75rem;font-weight:600;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:var(--purple-lt);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+    .content{padding:2rem}
+    .filter-bar{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    .filter-btn{padding:0.4rem 1rem;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all 0.2s}
+    .filter-btn.active{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border-color:transparent}
+    .section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin:1.5rem 0 0.85rem;display:flex;align-items:center;gap:0.6rem}
+    .section-badge{font-size:0.68rem;padding:0.2rem 0.6rem;border-radius:999px;background:rgba(168,85,247,0.12);color:var(--purple-lt);border:1px solid rgba(168,85,247,0.2);font-weight:600}
+    .market-table{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1rem}
+    .table-header{display:grid;grid-template-columns:2.2fr 1fr 1fr 0.8fr 1fr 110px;padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+    .market-row{display:grid;grid-template-columns:2.2fr 1fr 1fr 0.8fr 1fr 110px;padding:0.85rem 1.25rem;border-bottom:1px solid var(--border);align-items:center;transition:background 0.15s;cursor:pointer}
+    .market-row:last-child{border-bottom:none}
+    .market-row:hover{background:rgba(168,85,247,0.05)}
+    .mkt-name{display:flex;align-items:center;gap:0.65rem}
+    .mkt-dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--purple-lt),var(--pink));flex-shrink:0;box-shadow:0 0 5px rgba(168,85,247,0.5)}
+    .mkt-dot-1s{background:linear-gradient(135deg,var(--pink),#be185d);box-shadow:0 0 5px rgba(236,72,153,0.5)}
+    .mkt-label{font-weight:600;font-size:0.875rem}
+    .mkt-sub{font-size:0.7rem;color:var(--muted)}
+    .mkt-price{font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem}
+    .up{color:#a855f7} .down{color:var(--pink)}
+    .digit-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.2)}
+    .mini-chart{height:32px;width:100%}
+    .trade-btn{padding:0.35rem 0.9rem;border-radius:7px;border:none;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.2s;text-decoration:none;display:inline-block;text-align:center}
+    .trade-btn:hover{opacity:0.85}
+    /* Digit panels */
+    .digit-section{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.1rem;margin-bottom:2rem}
+    .digit-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+    .dp-title{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;margin-bottom:0.85rem;display:flex;justify-content:space-between;align-items:center}
+    .dp-badge{font-size:0.65rem;padding:0.18rem 0.5rem;border-radius:999px;background:rgba(236,72,153,0.1);color:var(--pink-lt);border:1px solid rgba(236,72,153,0.2)}
+    .digit-grid-mini{display:grid;grid-template-columns:repeat(5,1fr);gap:0.35rem;margin-bottom:0.75rem}
+    .dc{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:0.45rem 0.2rem;text-align:center}
+    .dc.hot{border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.08)}
+    .dc.cold{border-color:rgba(236,72,153,0.3);background:rgba(236,72,153,0.05)}
+    .dc-num{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700}
+    .dc.hot .dc-num{color:var(--purple-lt)}
+    .dc.cold .dc-num{color:var(--pink-lt)}
+    .dc-pct{font-size:0.62rem;color:var(--muted)}
+    .dc-bar{height:3px;border-radius:999px;margin-top:3px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+    .last-strip{display:flex;gap:0.3rem;flex-wrap:wrap}
+    .ls{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700}
+    .ls-e{background:rgba(168,85,247,0.12);color:var(--purple-lt);border:1px solid rgba(168,85,247,0.2)}
+    .ls-o{background:rgba(236,72,153,0.1);color:var(--pink-lt);border:1px solid rgba(236,72,153,0.18)}
+    @media(max-width:1100px){.table-header,.market-row{grid-template-columns:2fr 1fr 1fr 1fr}}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+<aside class="sidebar">
+  <div class="sidebar-logo">ManooFX</div>
+  <div class="nav-section">Main</div>
+  <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a href="markets.html" class="nav-item active"><span class="nav-icon">📊</span> Markets</a>
+  <a href="trade.html" class="nav-item"><span class="nav-icon">⚡</span> Trade</a>
+  <div class="nav-section">Automation</div>
+  <a href="bots.html" class="nav-item"><span class="nav-icon">🤖</span> AI Bots</a>
+  <a href="analytics.html" class="nav-item"><span class="nav-icon">📈</span> Analytics</a>
+  <a href="ai-analyser.html" class="nav-item"><span class="nav-icon">🧠</span> AI Analyser</a>
+  <div class="nav-section">System</div>
+  <a href="admin.html" class="nav-item"><span class="nav-icon">🛡️</span> Admin</a>
+  <a href="index.html" class="nav-item"><span class="nav-icon">🌐</span> Website</a>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar">M</div>
+      <div><div style="font-size:0.82rem;font-weight:600">Manoo</div><div style="font-size:0.72rem;color:var(--muted)">Admin · Real</div></div>
+    </div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">Live Markets</div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <a href="ai-analyser.html" style="padding:0.35rem 1rem;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:0.8rem;font-weight:600;text-decoration:none">🧠 AI Analyser</a>
+      <div class="live-badge">● Live</div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter(this,'all')">All Markets</button>
+      <button class="filter-btn" onclick="setFilter(this,'v')">Volatility (Standard)</button>
+      <button class="filter-btn" onclick="setFilter(this,'v1s')">Volatility (1s)</button>
+      <button class="filter-btn" onclick="setFilter(this,'jump')">Jump</button>
+      <button class="filter-btn" onclick="setFilter(this,'step')">Step</button>
+    </div>
+
+    <!-- Standard Volatility -->
+    <div class="section-title" data-cat="v all">Volatility Indices <span class="section-badge">Standard</span></div>
+    <div class="market-table" data-cat="v all">
+      <div class="table-header"><div>Market</div><div>Price</div><div>Change</div><div>Last Digit</div><div>Trend</div><div>Action</div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Volatility 10 Index</div><div class="mkt-sub">V10 · Standard</div></div></div><div class="mkt-price">5,821.34</div><div class="up">▲ 0.42%</div><div><span class="digit-badge">3</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,26 13,20 26,23 40,12 53,16 67,8 80,4" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Volatility 25 Index</div><div class="mkt-sub">V25 · Standard</div></div></div><div class="mkt-price">12,445.70</div><div class="down">▼ 0.18%</div><div><span class="digit-badge">7</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,8 13,14 26,10 40,20 53,18 67,24 80,26" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Volatility 50 Index</div><div class="mkt-sub">V50 · Standard</div></div></div><div class="mkt-price">3,102.88</div><div class="up">▲ 1.03%</div><div><span class="digit-badge">1</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,28 13,22 26,24 40,14 53,8 67,10 80,4" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Volatility 75 Index</div><div class="mkt-sub">V75 · Standard</div></div></div><div class="mkt-price">8,934.12</div><div class="up">▲ 0.67%</div><div><span class="digit-badge">5</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,24 13,18 26,20 40,10 53,14 67,6 80,4" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Volatility 100 Index</div><div class="mkt-sub">V100 · Standard</div></div></div><div class="mkt-price">22,108.55</div><div class="down">▼ 0.29%</div><div><span class="digit-badge">9</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,6 13,12 26,8 40,18 53,16 67,22 80,24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+    </div>
+
+    <!-- 1s Volatility -->
+    <div class="section-title" data-cat="v1s all">Volatility Indices <span class="section-badge" style="background:rgba(236,72,153,0.1);color:var(--pink-lt);border-color:rgba(236,72,153,0.2)">1 Second</span></div>
+    <div class="market-table" data-cat="v1s all">
+      <div class="table-header"><div>Market</div><div>Price</div><div>Change</div><div>Last Digit</div><div>Trend</div><div>Action</div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot mkt-dot-1s"></div><div><div class="mkt-label">Volatility 10 (1s) Index</div><div class="mkt-sub">V10 1s · Fast</div></div></div><div class="mkt-price">1,204.67</div><div class="up">▲ 0.31%</div><div><span class="digit-badge" style="background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.2)">6</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,22 13,16 26,18 40,8 53,12 67,6 80,2" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot mkt-dot-1s"></div><div><div class="mkt-label">Volatility 25 (1s) Index</div><div class="mkt-sub">V25 1s · Fast</div></div></div><div class="mkt-price">3,891.22</div><div class="down">▼ 0.44%</div><div><span class="digit-badge" style="background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.2)">2</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,6 13,10 26,8 40,16 53,14 67,20 80,22" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot mkt-dot-1s"></div><div><div class="mkt-label">Volatility 50 (1s) Index</div><div class="mkt-sub">V50 1s · Fast</div></div></div><div class="mkt-price">9,334.80</div><div class="up">▲ 0.89%</div><div><span class="digit-badge" style="background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.2)">8</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,26 13,20 26,22 40,12 53,6 67,8 80,2" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot mkt-dot-1s"></div><div><div class="mkt-label">Volatility 75 (1s) Index</div><div class="mkt-sub">V75 1s · Fast</div></div></div><div class="mkt-price">18,720.44</div><div class="up">▲ 1.12%</div><div><span class="digit-badge" style="background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.2)">4</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,28 13,22 26,24 40,14 53,8 67,10 80,2" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot mkt-dot-1s"></div><div><div class="mkt-label">Volatility 100 (1s) Index</div><div class="mkt-sub">V100 1s · Fast</div></div></div><div class="mkt-price">44,210.33</div><div class="down">▼ 0.55%</div><div><span class="digit-badge" style="background:rgba(236,72,153,0.1);border-color:rgba(236,72,153,0.2)">0</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,4 13,10 26,6 40,16 53,14 67,22 80,26" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+    </div>
+
+    <!-- Jump -->
+    <div class="section-title" data-cat="jump all">Jump Indices</div>
+    <div class="market-table" data-cat="jump all">
+      <div class="table-header"><div>Market</div><div>Price</div><div>Change</div><div>Last Digit</div><div>Trend</div><div>Action</div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Jump 10 Index</div><div class="mkt-sub">J10 · Jump</div></div></div><div class="mkt-price">821.44</div><div class="up">▲ 1.20%</div><div><span class="digit-badge">7</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,24 13,18 26,4 40,18 53,10 67,24 80,8" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Jump 25 Index</div><div class="mkt-sub">J25 · Jump</div></div></div><div class="mkt-price">1,034.88</div><div class="down">▼ 0.62%</div><div><span class="digit-badge">3</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,10 13,22 26,8 40,20 53,6 67,18 80,4" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Jump 50 Index</div><div class="mkt-sub">J50 · Jump</div></div></div><div class="mkt-price">1,455.30</div><div class="up">▲ 2.11%</div><div><span class="digit-badge">0</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,26 13,20 26,4 40,18 53,2 67,16 80,4" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Jump 75 Index</div><div class="mkt-sub">J75 · Jump</div></div></div><div class="mkt-price">2,890.44</div><div class="down">▼ 0.88%</div><div><span class="digit-badge">6</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,4 13,18 26,6 40,22 53,8 67,20 80,28" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Jump 100 Index</div><div class="mkt-sub">J100 · Jump</div></div></div><div class="mkt-price">5,122.77</div><div class="up">▲ 3.04%</div><div><span class="digit-badge">9</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,28 13,14 26,4 40,18 53,2 67,16 80,2" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+    </div>
+
+    <!-- Step -->
+    <div class="section-title" data-cat="step all">Step Index</div>
+    <div class="market-table" data-cat="step all">
+      <div class="table-header"><div>Market</div><div>Price</div><div>Change</div><div>Last Digit</div><div>Trend</div><div>Action</div></div>
+      <div class="market-row"><div class="mkt-name"><div class="mkt-dot"></div><div><div class="mkt-label">Step Index</div><div class="mkt-sub">Step · Synthetic</div></div></div><div class="mkt-price">7,621.00</div><div class="up">▲ 0.55%</div><div><span class="digit-badge">2</span></div><div><svg class="mini-chart" viewBox="0 0 80 32"><polyline points="0,20 13,20 26,14 40,14 53,8 67,8 80,2" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/></svg></div><div><a href="trade.html" class="trade-btn">Trade</a></div></div>
+    </div>
+
+    <!-- Digit Frequency - All -->
+    <div class="section-title">Digit Frequency — All Markets</div>
+    <div class="digit-section" id="digitPanels"></div>
+  </div>
+</main>
+<script>
+  function setFilter(el, cat) {
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('[data-cat]').forEach(el=>{
+      const cats = el.getAttribute('data-cat').split(' ');
+      el.style.display = cats.includes(cat) ? '' : 'none';
+    });
+  }
+
+  const MARKETS = [
+    {name:'V10 Index',tag:'Standard'},{name:'V25 Index',tag:'Standard'},{name:'V50 Index',tag:'Standard'},
+    {name:'V75 Index',tag:'Standard'},{name:'V100 Index',tag:'Standard'},
+    {name:'V10 (1s) Index',tag:'1s'},{name:'V25 (1s) Index',tag:'1s'},{name:'V50 (1s) Index',tag:'1s'},
+    {name:'V75 (1s) Index',tag:'1s'},{name:'V100 (1s) Index',tag:'1s'},
+    {name:'Step Index',tag:'Step'},{name:'Jump 10',tag:'Jump'},{name:'Jump 25',tag:'Jump'},
+    {name:'Jump 50',tag:'Jump'},{name:'Jump 75',tag:'Jump'},{name:'Jump 100',tag:'Jump'},
+  ];
+
+  const container = document.getElementById('digitPanels');
+  MARKETS.forEach(m => {
+    const data = Array.from({length:10},()=>Math.floor(Math.random()*8)+6);
+    const total = data.reduce((a,b)=>a+b,0);
+    const pcts = data.map(v=>Math.round(v/total*100));
+    const max = Math.max(...pcts), min = Math.min(...pcts);
+    const digits = Array.from({length:20},()=>Math.floor(Math.random()*10));
+    const is1s = m.tag==='1s';
+
+    const panel = document.createElement('div');
+    panel.className = 'digit-panel';
+    panel.innerHTML = `
+      <div class="dp-title">
+        <span>${m.name}</span>
+        <span class="dp-badge" style="${is1s?'background:rgba(236,72,153,0.1);color:var(--pink-lt);border-color:rgba(236,72,153,0.2)':''}">${m.tag}</span>
+      </div>
+      <div class="digit-grid-mini">
+        ${pcts.map((p,i)=>`
+          <div class="dc ${p===max?'hot':p===min?'cold':''}">
+            <div class="dc-num">${i}</div>
+            <div class="dc-pct">${p}%</div>
+            <div class="dc-bar" style="width:${(p/max)*100}%"></div>
+          </div>`).join('')}
+      </div>
+      <div class="last-strip">
+        ${digits.map(d=>`<div class="ls ${d%2===0?'ls-e':'ls-o'}">${d}</div>`).join('')}
+      </div>`;
+    container.appendChild(panel);
+  });
+</script>
+<script src="js/deriv.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
