@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ManooFX – Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0a1a;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--purple:#7c3aed;--purple-lt:#a855f7;--pink:#ec4899;--pink-lt:#f472b6;--white:#f8f4ff;--muted:#9480b8;--card:rgba(255,255,255,0.03);--radius:14px;--sidebar:240px}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden}
+    .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.18;animation:drift 14s ease-in-out infinite alternate}
+    .orb-1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;left:-100px}
+    .orb-2{width:500px;height:500px;background:radial-gradient(circle,#ec4899,transparent 70%);bottom:-100px;right:-100px;animation-delay:-6s}
+    @keyframes drift{from{transform:translate(0,0)}to{transform:translate(30px,20px)}}
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:rgba(13,10,26,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;backdrop-filter:blur(20px)}
+    .sidebar-logo{padding:1.5rem 1.5rem 1rem;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple-lt),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border);margin-bottom:0.5rem}
+    .nav-section{padding:0.5rem 0.75rem;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;margin:0 0.5rem;border-radius:10px;font-size:0.875rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none}
+    .nav-item:hover{background:rgba(168,85,247,0.1);color:var(--white)}
+    .nav-item.active{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));color:var(--white);border:1px solid rgba(168,85,247,0.2)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid var(--border)}
+    .user-pill{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;position:relative;z-index:10}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(13,10,26,0.7);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+    .page-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+    .content{padding:2rem}
+
+    /* TOP STATS */
+    .stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+    .sc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;position:relative;overflow:hidden}
+    .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+    .sc-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem}
+    .sc-value{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:0.25rem}
+    .sc-sub{font-size:0.72rem}
+    .up{color:var(--purple-lt)} .down{color:var(--pink-lt)} .neu{color:var(--muted)}
+
+    /* AI DEEP ANALYSER */
+    .ai-deep{background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(236,72,153,0.08));border:1px solid rgba(168,85,247,0.3);border-radius:20px;padding:1.75rem;margin-bottom:2rem}
+    .ai-deep-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+    .ai-deep-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:0.6rem}
+    .ai-deep-sub{font-size:0.78rem;color:var(--muted);margin-top:0.2rem}
+    .ai-controls{display:flex;gap:0.65rem;flex-wrap:wrap}
+    .ai-sel{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;padding:0.5rem 0.85rem;color:var(--white);font-family:'Inter',sans-serif;font-size:0.82rem;outline:none;cursor:pointer}
+    .ai-sel:focus{border-color:var(--purple-lt)}
+    .ai-sel option{background:#1a1030}
+    .btn-run{padding:0.55rem 1.4rem;border-radius:9px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s}
+    .btn-run:hover{opacity:0.88;transform:translateY(-1px)}
+
+    /* AI OUTPUT */
+    .ai-output{display:none}
+    .ai-output.show{display:block}
+    .ai-spinner-wrap{display:none;text-align:center;padding:2rem}
+    .ai-spinner-wrap.show{display:block}
+    .spinner{width:44px;height:44px;border:3px solid rgba(168,85,247,0.2);border-top-color:var(--purple-lt);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Scorecard */
+    .score-band{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.85rem;margin-bottom:1.5rem}
+    .score-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
+    .score-card.hot{border-color:rgba(168,85,247,0.5);background:rgba(168,85,247,0.07)}
+    .score-card.warm{border-color:rgba(236,72,153,0.4);background:rgba(236,72,153,0.06)}
+    .score-card.cool{border-color:rgba(255,255,255,0.1)}
+    .sc-ico{font-size:1.5rem;margin-bottom:0.4rem}
+    .sc-lbl{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.25rem}
+    .sc-val{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
+    .sc-hint{font-size:0.68rem;color:var(--muted);margin-top:0.15rem}
+
+    /* Rec box */
+    .rec-box{background:rgba(13,10,26,0.7);border:1px solid rgba(168,85,247,0.25);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem}
+    .rec-title{font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem}
+    .rec-body{font-size:0.84rem;color:var(--muted);line-height:1.8}
+    .rec-body strong{color:var(--white)}
+    .rec-row{display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.75rem}
+    .rec-chip{padding:0.3rem 0.8rem;border-radius:8px;font-size:0.78rem;font-weight:600;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));border:1px solid rgba(168,85,247,0.3);color:var(--white)}
+
+    /* Full digit analysis */
+    .full-digit{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+    .fd-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem}
+    .fd-title{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.75rem;font-weight:600}
+    .d-bar-row{display:flex;align-items:center;gap:0.55rem;margin-bottom:0.4rem;font-size:0.78rem}
+    .d-num{width:16px;text-align:center;font-weight:700}
+    .d-track{flex:1;height:9px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden}
+    .d-fill{height:100%;border-radius:999px}
+    .d-purple{background:linear-gradient(90deg,#7c3aed,#a855f7)}
+    .d-pink{background:linear-gradient(90deg,#ec4899,#f472b6)}
+    .d-grey{background:rgba(148,128,184,0.4)}
+    .d-pct{width:32px;text-align:right;color:var(--muted);font-size:0.7rem}
+
+    /* EO streak */
+    .streak-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;margin-bottom:1.25rem}
+    .streak-title{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.6rem;font-weight:600}
+    .streak-row{display:flex;gap:0.28rem;flex-wrap:wrap}
+    .s-tick{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700}
+    .s-e{background:rgba(168,85,247,0.18);color:var(--purple-lt);border:1px solid rgba(168,85,247,0.3)}
+    .s-o{background:rgba(236,72,153,0.12);color:var(--pink-lt);border:1px solid rgba(236,72,153,0.25)}
+
+    /* Prob section */
+    .prob-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem}
+    .prob-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;font-size:0.82rem}
+    .prob-label{width:120px;flex-shrink:0}
+    .prob-track{flex:1;height:10px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden}
+    .prob-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width 1s ease}
+    .prob-pct{width:38px;text-align:right;font-weight:600;font-size:0.8rem;color:var(--purple-lt)}
+
+    /* SECTION TABS */
+    .section-tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    .stab{padding:0.45rem 1.1rem;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all 0.2s}
+    .stab.active{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border-color:transparent}
+
+    /* WIN/LOSS CHART */
+    .chart-panels{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem}
+    .panel-head{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+    .p-sel{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:0.3rem 0.6rem;color:var(--white);font-family:'Inter',sans-serif;font-size:0.75rem;outline:none;cursor:pointer}
+    .p-sel option{background:#1a1030}
+    .bar-chart{display:flex;align-items:flex-end;gap:5px;height:130px}
+    .bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:3px}
+    .bar{border-radius:4px 4px 0 0;width:100%;cursor:pointer;transition:opacity 0.2s}
+    .bar:hover{opacity:0.75}
+    .bar-lbl{font-size:0.6rem;color:var(--muted);margin-top:2px}
+    /* Donut */
+    .donut-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
+    .donut-legend{display:flex;flex-direction:column;gap:0.45rem;width:100%}
+    .leg-item{display:flex;align-items:center;justify-content:space-between;font-size:0.78rem}
+    .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .leg-label{display:flex;align-items:center;gap:0.45rem;color:var(--muted)}
+
+    /* ALL MARKETS DIGIT GRID */
+    .all-digit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.1rem}
+    .adp{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+    .adp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem}
+    .adp-title{font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700}
+    .adp-badge{font-size:0.65rem;padding:0.15rem 0.45rem;border-radius:5px;font-weight:600}
+    .badge-e{background:rgba(168,85,247,0.15);color:var(--purple-lt)}
+    .badge-o{background:rgba(236,72,153,0.12);color:var(--pink-lt)}
+    .adp-bars{display:flex;flex-direction:column;gap:0.35rem}
+    .adb-row{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem}
+    .adb-num{width:13px;text-align:center;font-weight:700}
+    .adb-track{flex:1;height:7px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden}
+    .adb-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+    .adb-pct{width:28px;text-align:right;color:var(--muted);font-size:0.65rem}
+    .adb-hot{color:var(--purple-lt)}
+    .adp-last{display:flex;gap:0.28rem;flex-wrap:wrap;margin-top:0.65rem;padding-top:0.55rem;border-top:1px solid var(--border)}
+    .al{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700}
+    .al-e{background:rgba(168,85,247,0.15);color:var(--purple-lt);border:1px solid rgba(168,85,247,0.25)}
+    .al-o{background:rgba(236,72,153,0.1);color:var(--pink-lt);border:1px solid rgba(236,72,153,0.2)}
+
+    @media(max-width:1100px){.chart-panels{grid-template-columns:1fr}.full-digit{grid-template-columns:1fr}}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">ManooFX</div>
+  <div class="nav-section">Main</div>
+  <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a href="markets.html" class="nav-item"><span class="nav-icon">📊</span> Markets</a>
+  <a href="trade.html" class="nav-item"><span class="nav-icon">⚡</span> Trade</a>
+  <div class="nav-section">Automation</div>
+  <a href="bots.html" class="nav-item"><span class="nav-icon">🤖</span> AI Bots</a>
+  <a href="analytics.html" class="nav-item active"><span class="nav-icon">📈</span> Analytics</a>
+  <a href="ai-analyser.html" class="nav-item"><span class="nav-icon">🧠</span> AI Analyser</a>
+  <div class="nav-section">System</div>
+  <a href="admin.html" class="nav-item"><span class="nav-icon">🛡️</span> Admin</a>
+  <a href="index.html" class="nav-item"><span class="nav-icon">🌐</span> Website</a>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar">M</div>
+      <div><div style="font-size:0.82rem;font-weight:600">Manoo</div><div style="font-size:0.72rem;color:var(--muted)">Admin · Real</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">Analytics & AI Signals</div>
+    <select class="p-sel" style="font-size:0.82rem;padding:0.4rem 0.8rem">
+      <option>Last 7 Days</option><option>Last 30 Days</option><option>All Time</option>
+    </select>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stat-row">
+      <div class="sc"><div class="sc-label">Total Trades</div><div class="sc-value">1,248</div><div class="sc-sub up">▲ +142 this week</div></div>
+      <div class="sc"><div class="sc-label">Win Rate</div><div class="sc-value">64%</div><div class="sc-sub up">▲ +3%</div></div>
+      <div class="sc"><div class="sc-label">Total P&L</div><div class="sc-value up">+$186</div><div class="sc-sub up">▲ +$42 today</div></div>
+      <div class="sc"><div class="sc-label">Best Bot</div><div class="sc-value" style="font-size:0.95rem;margin-top:0.3rem">Accumulator</div><div class="sc-sub up">+$12.00</div></div>
+      <div class="sc"><div class="sc-label">Markets Tracked</div><div class="sc-value">18</div><div class="sc-sub neu">All indices</div></div>
+    </div>
+
+    <!-- AI DEEP ANALYSER -->
+    <div class="ai-deep">
+      <div class="ai-deep-head">
+        <div>
+          <div class="ai-deep-title">🧠 AI Deep Market Analyser</div>
+          <div class="ai-deep-sub">Select any market and tick range — AI scans digit patterns, streak data, contract probabilities and generates a full signal report</div>
+        </div>
+        <div class="ai-controls">
+          <select class="ai-sel" id="deepMkt">
+            <optgroup label="Volatility (Standard)">
+              <option>Volatility 10 Index</option>
+              <option>Volatility 25 Index</option>
+              <option>Volatility 50 Index</option>
+              <option selected>Volatility 75 Index</option>
+              <option>Volatility 100 Index</option>
+            </optgroup>
+            <optgroup label="Volatility (1s)">
+              <option>Volatility 10 (1s) Index</option>
+              <option>Volatility 25 (1s) Index</option>
+              <option>Volatility 50 (1s) Index</option>
+              <option>Volatility 75 (1s) Index</option>
+              <option>Volatility 100 (1s) Index</option>
+            </optgroup>
+            <optgroup label="Jump Indices">
+              <option>Jump 10 Index</option><option>Jump 25 Index</option>
+              <option>Jump 50 Index</option><option>Jump 75 Index</option><option>Jump 100 Index</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option>Step Index</option><option>Crash 300 Index</option><option>Boom 300 Index</option>
+            </optgroup>
+          </select>
+          <select class="ai-sel" id="deepTicks">
+            <option>Last 50 ticks</option>
+            <option selected>Last 100 ticks</option>
+            <option>Last 200 ticks</option>
+            <option>Last 500 ticks</option>
+          </select>
+          <button class="btn-run" onclick="runDeepAnalysis()">🔍 Run Analysis</button>
+        </div>
+      </div>
+
+      <!-- Spinner -->
+      <div class="ai-spinner-wrap" id="deepLoading">
+        <div class="spinner"></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.3rem">Running deep analysis...</div>
+        <div style="font-size:0.8rem;color:var(--muted)">Scanning digit patterns · Calculating streaks · Building signal report</div>
+      </div>
+
+      <!-- Output -->
+      <div class="ai-output" id="deepOutput">
+        <div class="score-band" id="scoreBand"></div>
+        <div class="rec-box" id="recBox"></div>
+        <div class="full-digit">
+          <div class="fd-panel">
+            <div class="fd-title">Digit Frequency Distribution</div>
+            <div id="freqBars"></div>
+          </div>
+          <div class="fd-panel">
+            <div class="fd-title">Contract Win Probabilities</div>
+            <div id="contractProbs"></div>
+          </div>
+        </div>
+        <div class="streak-wrap">
+          <div class="streak-title">Even / Odd Streak — Last 40 Ticks &nbsp;<span style="font-weight:400"><span style="color:var(--purple-lt)">■</span> Even &nbsp;<span style="color:var(--pink-lt)">■</span> Odd</span></div>
+          <div class="streak-row" id="streakRow"></div>
+        </div>
+        <div class="prob-wrap">
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em">Over / Under Probability Split</div>
+          <div id="ouProbs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIN/LOSS CHARTS -->
+    <div class="section-tabs">
+      <button class="stab active" onclick="setTab(this)">Win / Loss Chart</button>
+      <button class="stab" onclick="setTab(this)">All Markets Digit Freq</button>
+    </div>
+
+    <div id="tabWinLoss">
+      <div class="chart-panels">
+        <div class="panel">
+          <div class="panel-head">Daily Win / Loss <select class="p-sel"><option>This Week</option><option>Last Week</option></select></div>
+          <div class="bar-chart" id="barChart"></div>
+          <div style="display:flex;gap:1.5rem;margin-top:1rem;font-size:0.72rem">
+            <span style="display:flex;align-items:center;gap:0.4rem"><span style="width:10px;height:10px;border-radius:3px;background:var(--purple-lt);display:inline-block"></span>Wins</span>
+            <span style="display:flex;align-items:center;gap:0.4rem"><span style="width:10px;height:10px;border-radius:3px;background:var(--pink-lt);display:inline-block"></span>Losses</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">Contract Mix</div>
+          <div class="donut-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="18"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#7c3aed" stroke-width="18" stroke-dasharray="113 170" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#a855f7" stroke-width="18" stroke-dasharray="57 226" stroke-dashoffset="-113" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#ec4899" stroke-width="18" stroke-dasharray="45 238" stroke-dashoffset="-170" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#f472b6" stroke-width="18" stroke-dasharray="28 255" stroke-dashoffset="-215" transform="rotate(-90 60 60)"/>
+              <text x="60" y="56" text-anchor="middle" fill="white" font-size="11" font-family="Syne" font-weight="700">1,248</text>
+              <text x="60" y="68" text-anchor="middle" fill="#9480b8" font-size="7">trades</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="leg-item"><div class="leg-label"><div class="leg-dot" style="background:#7c3aed"></div>Digit Differs</div><span style="font-weight:600">40%</span></div>
+              <div class="leg-item"><div class="leg-label"><div class="leg-dot" style="background:#a855f7"></div>Even/Odd</div><span style="font-weight:600">20%</span></div>
+              <div class="leg-item"><div class="leg-label"><div class="leg-dot" style="background:#ec4899"></div>Rise/Fall</div><span style="font-weight:600">16%</span></div>
+              <div class="leg-item"><div class="leg-label"><div class="leg-dot" style="background:#f472b6"></div>Over/Under</div><span style="font-weight:600">10%</span></div>
+              <div class="leg-item"><div class="leg-label"><div class="leg-dot" style="background:#9480b8"></div>Other</div><span style="font-weight:600">14%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabDigit" style="display:none">
+      <div class="all-digit-grid" id="allDigitGrid"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ALL markets list
+const ALL_MARKETS=[
+  'Volatility 10 Index','Volatility 25 Index','Volatility 50 Index','Volatility 75 Index','Volatility 100 Index',
+  'Volatility 10 (1s) Index','Volatility 25 (1s) Index','Volatility 50 (1s) Index','Volatility 75 (1s) Index','Volatility 100 (1s) Index',
+  'Jump 10 Index','Jump 25 Index','Jump 50 Index','Jump 75 Index','Jump 100 Index',
+  'Step Index','Crash 300 Index','Boom 300 Index'
+];
+
+function rnd(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function rndDigits(){
+  let d=Array.from({length:10},()=>rnd(7,13));
+  d[rnd(0,9)]+=8;
+  const total=d.reduce((a,b)=>a+b,0);
+  return d.map(v=>Math.round(v/total*100));
+}
+function rndLast(n){return Array.from({length:n},()=>rnd(0,9))}
+
+// Bar chart
+function buildBarChart(){
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const wins=[28,35,22,42,38,50,44];
+  const losses=[12,18,15,20,14,22,16];
+  const max=Math.max(...wins,...losses);
+  const c=document.getElementById('barChart');
+  days.forEach((d,i)=>{
+    const col=document.createElement('div');col.className='bar-col';
+    col.innerHTML=`
+      <div class="bar" style="height:${(wins[i]/max)*110}px;background:linear-gradient(180deg,var(--purple-lt),var(--purple))"></div>
+      <div class="bar" style="height:${(losses[i]/max)*110}px;background:linear-gradient(180deg,var(--pink-lt),var(--pink))"></div>
+      <div class="bar-lbl">${d}</div>`;
+    c.appendChild(col);
+  });
+}
+
+// All markets digit panels
+function buildAllDigit(){
+  const c=document.getElementById('allDigitGrid');c.innerHTML='';
+  ALL_MARKETS.forEach(name=>{
+    const data=rndDigits();
+    const max=Math.max(...data);
+    const domIdx=data.indexOf(max);
+    const last=rndLast(18);
+    const evenCount=last.filter(d=>d%2===0).length;
+    const panel=document.createElement('div');panel.className='adp';
+    panel.innerHTML=`
+      <div class="adp-head">
+        <div class="adp-title">${name}</div>
+        <span class="adp-badge ${evenCount>=9?'badge-e':'badge-o'}">${evenCount>=9?'Even':'Odd'} bias</span>
+      </div>
+      <div class="adp-bars">${data.map((v,i)=>`
+        <div class="adb-row">
+          <span class="adb-num ${i===domIdx?'adb-hot':''}">${i}</span>
+          <div class="adb-track"><div class="adb-fill" style="width:${(v/max)*100}%"></div></div>
+          <span class="adb-pct">${v}%</span>
+        </div>`).join('')}
+      </div>
+      <div class="adp-last">${last.map(d=>`<div class="al ${d%2===0?'al-e':'al-o'}">${d}</div>`).join('')}</div>`;
+    c.appendChild(panel);
+  });
+}
+
+// AI Deep Analysis
+function runDeepAnalysis(){
+  const mkt=document.getElementById('deepMkt').value;
+  document.getElementById('deepLoading').classList.add('show');
+  document.getElementById('deepOutput').classList.remove('show');
+  setTimeout(()=>{
+    document.getElementById('deepLoading').classList.remove('show');
+    buildDeepResult(mkt);
+    document.getElementById('deepOutput').classList.add('show');
+  },2000);
+}
+
+function buildDeepResult(market){
+  const digits=rndDigits();
+  const max=Math.max(...digits);
+  const domIdx=digits.indexOf(max);
+  const minIdx=digits.indexOf(Math.min(...digits));
+  const last40=rndLast(40);
+  const evenCount=last40.filter(d=>d%2===0).length;
+  const evenBias=evenCount>20;
+  const confidence=rnd(68,94);
+  const winEst=rnd(58,82);
+  const trend=Math.random()>0.45;
+  const sorted=[...digits.map((v,i)=>({v,i}))].sort((a,b)=>b.v-a.v);
+  const hot=sorted.slice(0,3).map(x=>x.i);
+  const cold=sorted.slice(-3).map(x=>x.i);
+
+  // Score band
+  const scores=[
+    {ico:trend?'📈':'📉',lbl:'Market Trend',val:trend?'↑ Bullish':'↓ Bearish',hint:'Last 40 ticks',cls:trend?'hot':'warm'},
+    {ico:'🎯',lbl:'Dominant Digit',val:`Digit ${domIdx}`,hint:`${digits[domIdx]}% frequency`,cls:'hot'},
+    {ico:'❄️',lbl:'Cold Digit',val:`Digit ${minIdx}`,hint:`Only ${digits[minIdx]}%`,cls:'cool'},
+    {ico:evenBias?'⚖️':'🔢',lbl:'Even/Odd Bias',val:evenBias?'Even ⬆':'Odd ⬆',hint:`${Math.max(evenCount,40-evenCount)}/40`,cls:evenBias?'hot':'warm'},
+    {ico:'💪',lbl:'AI Confidence',val:`${confidence}%`,hint:'Signal strength',cls:confidence>=80?'hot':'warm'},
+    {ico:'🎲',lbl:'Est. Win Rate',val:`${winEst}%`,hint:'Pattern-based',cls:winEst>=70?'hot':'warm'},
+    {ico:'🔥',lbl:'Hot Digits',val:hot.join(', '),hint:'Over-represented',cls:'hot'},
+    {ico:'🌡️',lbl:'Cold Digits',val:cold.join(', '),hint:'Under-represented',cls:'cool'},
+  ];
+  document.getElementById('scoreBand').innerHTML=scores.map(s=>`
+    <div class="score-card ${s.cls}">
+      <div class="sc-ico">${s.ico}</div>
+      <div class="sc-lbl">${s.lbl}</div>
+      <div class="sc-val">${s.val}</div>
+      <div class="sc-hint">${s.hint}</div>
+    </div>`).join('');
+
+  // Rec box
+  const topContract=`Digit Differs ${minIdx}`;
+  const altContract=evenBias?'Even/Odd (Even)':'Even/Odd (Odd)';
+  document.getElementById('recBox').innerHTML=`
+    <div class="rec-title">🤖 AI Signal Report — ${market}</div>
+    <div class="rec-body">
+      <strong>Best Trade:</strong> ${topContract} — Digit ${minIdx} is significantly cold at ${digits[minIdx]}%, making a Differs trade on this digit highly favourable.<br/>
+      <strong>Alternative:</strong> ${altContract} — ${evenBias?evenCount:40-evenCount}/40 recent ticks are ${evenBias?'even':'odd'}, confirming a strong bias.<br/>
+      <strong>Avoid:</strong> Digit Matches ${domIdx} — Digit ${domIdx} is currently dominant at ${digits[domIdx]}%, increasing match risk.<br/>
+      <span style="color:rgba(255,255,255,0.35);font-size:0.72rem">Analysis based on simulated pattern data. Connect Deriv WebSocket for live signals.</span>
+    </div>
+    <div class="rec-row">
+      <span class="rec-chip">Stake: $1.00</span>
+      <span class="rec-chip">Martingale: 2×</span>
+      <span class="rec-chip">TP: $25</span>
+      <span class="rec-chip">SL: $10</span>
+      <span class="rec-chip">Max losses: 5</span>
+    </div>`;
+
+  // Freq bars
+  document.getElementById('freqBars').innerHTML=digits.map((v,i)=>{
+    const cls=i===domIdx?'d-purple':i===minIdx?'d-pink':'d-grey';
+    return `<div class="d-bar-row">
+      <span class="d-num" style="color:${i===domIdx?'var(--purple-lt)':i===minIdx?'var(--pink-lt)':'var(--muted)'}">${i}</span>
+      <div class="d-track"><div class="d-fill ${cls}" style="width:${(v/max)*100}%"></div></div>
+      <span class="d-pct">${v}%</span>
+    </div>`;}).join('');
+
+  // Contract probs
+  const probs=[
+    {l:'Digit Differs '+minIdx,p:rnd(78,91)},
+    {l:'Even/Odd '+(evenBias?'Even':'Odd'),p:Math.round(Math.max(evenCount,40-evenCount)/40*100)},
+    {l:'Rise/Fall '+(trend?'Rise':'Fall'),p:rnd(55,72)},
+    {l:'Over '+(domIdx>=5?'4':'5'),p:rnd(50,68)},
+    {l:'Under '+(domIdx>=5?'5':'4'),p:rnd(48,65)},
+    {l:'Digit Matches '+domIdx,p:rnd(22,38)},
+  ];
+  document.getElementById('contractProbs').innerHTML=probs.map(p=>`
+    <div class="prob-row">
+      <div class="prob-label" style="width:140px;font-size:0.78rem">${p.l}</div>
+      <div class="prob-track"><div class="prob-fill" style="width:${p.p}%"></div></div>
+      <div class="prob-pct">${p.p}%</div>
+    </div>`).join('');
+
+  // EO streak
+  document.getElementById('streakRow').innerHTML=last40.map(d=>`<div class="s-tick ${d%2===0?'s-e':'s-o'}">${d}</div>`).join('');
+
+  // Over/under split
+  const overDigits=[5,6,7,8,9];
+  const overPct=overDigits.reduce((s,i)=>s+digits[i],0);
+  const underPct=100-overPct;
+  document.getElementById('ouProbs').innerHTML=`
+    <div class="prob-row"><div class="prob-label">Over 4 (5–9)</div><div class="prob-track"><div class="prob-fill" style="width:${overPct}%"></div></div><div class="prob-pct">${overPct}%</div></div>
+    <div class="prob-row"><div class="prob-label">Under 5 (0–4)</div><div class="prob-track"><div class="prob-fill" style="width:${underPct}%;background:linear-gradient(90deg,var(--pink),var(--pink-lt))"></div></div><div class="prob-pct" style="color:var(--pink-lt)">${underPct}%</div></div>
+    <div class="prob-row"><div class="prob-label">Even digits</div><div class="prob-track"><div class="prob-fill" style="width:${Math.round(evenCount/40*100)}%"></div></div><div class="prob-pct">${Math.round(evenCount/40*100)}%</div></div>
+    <div class="prob-row"><div class="prob-label">Odd digits</div><div class="prob-track"><div class="prob-fill" style="width:${Math.round((40-evenCount)/40*100)}%;background:linear-gradient(90deg,var(--pink),var(--pink-lt))"></div></div><div class="prob-pct" style="color:var(--pink-lt)">${Math.round((40-evenCount)/40*100)}%</div></div>`;
+}
+
+// Tab switching
+function setTab(el){
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const idx=[...el.parentElement.children].indexOf(el);
+  document.getElementById('tabWinLoss').style.display=idx===0?'block':'none';
+  document.getElementById('tabDigit').style.display=idx===1?'block':'none';
+  if(idx===1) buildAllDigit();
+}
+
+buildBarChart();
+</script>
+<script src="js/deriv.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
