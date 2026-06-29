@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ManooFX – AI Bots</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0a1a;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--purple:#7c3aed;--purple-lt:#a855f7;--pink:#ec4899;--pink-lt:#f472b6;--white:#f8f4ff;--muted:#9480b8;--card:rgba(255,255,255,0.03);--radius:14px;--sidebar:240px}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden}
+    .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.18;animation:drift 14s ease-in-out infinite alternate}
+    .orb-1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;left:-100px}
+    .orb-2{width:500px;height:500px;background:radial-gradient(circle,#ec4899,transparent 70%);bottom:-100px;right:-100px;animation-delay:-6s}
+    @keyframes drift{from{transform:translate(0,0)}to{transform:translate(30px,20px)}}
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:rgba(13,10,26,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;backdrop-filter:blur(20px)}
+    .sidebar-logo{padding:1.5rem 1.5rem 1rem;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple-lt),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border);margin-bottom:0.5rem}
+    .nav-section{padding:0.5rem 0.75rem;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;margin:0 0.5rem;border-radius:10px;font-size:0.875rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none}
+    .nav-item:hover{background:rgba(168,85,247,0.1);color:var(--white)}
+    .nav-item.active{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));color:var(--white);border:1px solid rgba(168,85,247,0.2)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid var(--border)}
+    .user-pill{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;position:relative;z-index:10}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(13,10,26,0.7);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+    .page-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+    .content{padding:2rem}
+    .btn{padding:0.55rem 1.2rem;border-radius:9px;font-size:0.85rem;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all 0.2s}
+    .btn-primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff}
+    .btn-outline{background:transparent;border:1.5px solid rgba(168,85,247,0.4);color:var(--purple-lt)}
+    .btn-outline:hover{background:rgba(168,85,247,0.1)}
+    /* Bot grid */
+    .bots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;margin-bottom:2rem}
+    .bot-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden}
+    .bot-card:hover{border-color:rgba(168,85,247,0.4);transform:translateY(-2px)}
+    .bot-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+    .bot-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem}
+    .bot-icon-wrap{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+    .toggle-wrap{display:flex;align-items:center;gap:0.5rem}
+    .toggle{width:40px;height:22px;border-radius:999px;background:var(--surface);border:1px solid var(--border);cursor:pointer;position:relative;transition:background 0.25s}
+    .toggle.on{background:linear-gradient(135deg,var(--purple),var(--pink));border-color:transparent}
+    .toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform 0.25s}
+    .toggle.on::after{transform:translateX(18px)}
+    .bot-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.3rem}
+    .bot-desc{font-size:0.82rem;color:var(--muted);line-height:1.5;margin-bottom:1rem}
+    .bot-meta{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.1rem}
+    .meta-chip{padding:0.2rem 0.6rem;border-radius:6px;font-size:0.72rem;font-weight:500;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted)}
+    .bot-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-bottom:1.1rem}
+    .bs{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem;text-align:center}
+    .bs-val{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700}
+    .bs-lbl{font-size:0.68rem;color:var(--muted);margin-top:0.1rem}
+    .up{color:var(--purple-lt)} .down{color:var(--pink-lt)}
+    .bot-actions{display:flex;gap:0.5rem}
+    /* Configure modal */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .modal-bg.open{display:flex}
+    .modal{background:#1a1030;border:1px solid rgba(168,85,247,0.3);border-radius:20px;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+    .modal-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center}
+    .close-btn{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1}
+    .field{margin-bottom:1rem}
+    .field label{display:block;font-size:0.78rem;font-weight:500;color:var(--muted);margin-bottom:0.4rem}
+    .field input,.field select{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;padding:0.7rem 1rem;color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s}
+    .field input:focus{border-color:var(--purple-lt)}
+    .field select option{background:#1a1030}
+    .modal-actions{display:flex;gap:0.75rem;margin-top:1.5rem}
+    /* Upload area */
+    .upload-area{background:var(--card);border:2px dashed rgba(168,85,247,0.3);border-radius:var(--radius);padding:2.5rem;text-align:center;margin-bottom:2rem;transition:border-color 0.2s;cursor:pointer}
+    .upload-area:hover{border-color:rgba(168,85,247,0.6)}
+    .upload-icon{font-size:2.5rem;margin-bottom:0.75rem}
+    .upload-title{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.4rem}
+    .upload-sub{font-size:0.82rem;color:var(--muted)}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+<aside class="sidebar">
+  <div class="sidebar-logo">ManooFX</div>
+  <div class="nav-section">Main</div>
+  <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a href="markets.html" class="nav-item"><span class="nav-icon">📊</span> Markets</a>
+  <a href="trade.html" class="nav-item"><span class="nav-icon">⚡</span> Trade</a>
+  <div class="nav-section">Automation</div>
+  <a href="bots.html" class="nav-item active"><span class="nav-icon">🤖</span> AI Bots</a>
+  <a href="analytics.html" class="nav-item"><span class="nav-icon">📈</span> Analytics</a>
+  <a href="ai-analyser.html" class="nav-item"><span class="nav-icon">🧠</span> AI Analyser</a>
+  <div class="nav-section">System</div>
+  <a href="admin.html" class="nav-item"><span class="nav-icon">🛡️</span> Admin</a>
+  <a href="index.html" class="nav-item"><span class="nav-icon">🌐</span> Website</a>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar">M</div>
+      <div><div style="font-size:0.82rem;font-weight:600">Manoo</div><div style="font-size:0.72rem;color:var(--muted)">Admin · Real</div></div>
+    </div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">AI Bots</div>
+    <div style="display:flex;gap:0.75rem">
+      <button class="btn btn-outline" onclick="document.getElementById('uploadModal').classList.add('open')">⬆ Import XML</button>
+      <button class="btn btn-primary" onclick="document.getElementById('configModal').classList.add('open')">+ New Bot</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="bots-grid" id="botsGrid"></div>
+    <div class="upload-area" onclick="document.getElementById('uploadModal').classList.add('open')">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Import XML Bot File</div>
+      <div class="upload-sub">Drag & drop a Deriv-compatible XML bot or click to browse</div>
+    </div>
+  </div>
+</main>
+
+<!-- Configure Modal -->
+<div class="modal-bg" id="configModal">
+  <div class="modal">
+    <div class="modal-title">Configure Bot <button class="close-btn" onclick="document.getElementById('configModal').classList.remove('open')">×</button></div>
+    <div class="field"><label>Market</label><select><option>Volatility 75 Index</option><option>Volatility 100 Index</option><option>Step Index</option><option>Jump 75 Index</option></select></div>
+    <div class="field"><label>Initial Stake (USD)</label><input type="number" value="1.00" min="0.35" step="0.01"/></div>
+    <div class="field"><label>Martingale Multiplier</label><select><option>1× (No martingale)</option><option selected>2×</option><option>3×</option><option>5×</option></select></div>
+    <div class="field"><label>Take Profit ($)</label><input type="number" placeholder="25.00"/></div>
+    <div class="field"><label>Stop Loss ($)</label><input type="number" placeholder="10.00"/></div>
+    <div class="field"><label>Max Consecutive Losses</label><input type="number" value="5"/></div>
+    <div class="field"><label>Account</label><select><option>Real Account</option><option>Demo Account</option></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="document.getElementById('configModal').classList.remove('open')">Save & Run Bot</button>
+      <button class="btn btn-outline" onclick="document.getElementById('configModal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-bg" id="uploadModal">
+  <div class="modal">
+    <div class="modal-title">Import XML Bot <button class="close-btn" onclick="document.getElementById('uploadModal').classList.remove('open')">×</button></div>
+    <div class="upload-area" style="margin-bottom:1.25rem">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Drop XML File Here</div>
+      <div class="upload-sub">Or click to browse your files</div>
+      <input type="file" accept=".xml" style="display:none" id="xmlInput"/>
+    </div>
+    <div class="field"><label>Bot Name</label><input type="text" placeholder="My Custom Bot"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="document.getElementById('uploadModal').classList.remove('open')">Import Bot</button>
+      <button class="btn btn-outline" onclick="document.getElementById('uploadModal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BOTS=[
+  {icon:'🎯',name:'Digit Over/Under Bot',desc:'Trades based on whether the last digit is above or below your chosen barrier.',market:'V75',stake:'$1.00',wins:64,pnl:'+$12.40',running:true,tags:['Digit','Synthetic']},
+  {icon:'⚖️',name:'Even/Odd Bot',desc:'Automatically trades even or odd digit outcomes with configurable martingale recovery.',market:'V10',stake:'$0.50',wins:58,pnl:'+$4.20',running:true,tags:['Even/Odd','Auto']},
+  {icon:'🔍',name:'Matches/Differs Bot',desc:'AI-powered signal detection for digit match and differ trades.',market:'V100',stake:'$1.00',wins:71,pnl:'+$8.75',running:true,tags:['AI','Differs']},
+  {icon:'📈',name:'Rise and Fall Bot',desc:'Automated rise/fall trading with HMM pattern analysis.',market:'Step',stake:'$0.35',wins:52,pnl:'-$1.05',running:false,tags:['Trend','HMM']},
+  {icon:'🌀',name:'Accumulator Bot',desc:'Smart accumulator trading with intelligent barrier management.',market:'V25',stake:'$1.00',wins:80,pnl:'+$12.00',running:false,tags:['Accumulator','TP Hit']},
+  {icon:'👑',name:'Dominant Digit Differs',desc:'Detects dominant digit exhaustion and trades the differ at peak moment.',market:'V75',stake:'$1.00',wins:68,pnl:'+$9.30',running:false,tags:['Advanced','AI']},
+  {icon:'🔄',name:'RC Even/Odd Bot',desc:'Percentage-based even/odd strategy with built-in recovery mode.',market:'V50',stake:'$0.50',wins:60,pnl:'+$3.10',running:false,tags:['Recovery','EO']},
+  {icon:'🧪',name:'Over 5 Demo Bot',desc:'Virtual loss entry — observe the market before committing real stakes.',market:'V75',stake:'$0.35',wins:0,pnl:'Demo',running:false,tags:['Demo','Safe']},
+];
+const grid=document.getElementById('botsGrid');
+BOTS.forEach((b,i)=>{
+  const card=document.createElement('div');
+  card.className='bot-card';
+  card.innerHTML=`
+    <div class="bot-head">
+      <div class="bot-icon-wrap">${b.icon}</div>
+      <div class="toggle-wrap">
+        <div class="toggle ${b.running?'on':''}" id="toggle${i}" onclick="toggleBot(${i})"></div>
+        <span style="font-size:0.72rem;color:var(--muted)">${b.running?'Running':'Stopped'}</span>
+      </div>
+    </div>
+    <div class="bot-name">${b.name}</div>
+    <div class="bot-desc">${b.desc}</div>
+    <div class="bot-meta">${b.tags.map(t=>`<span class="meta-chip">${t}</span>`).join('')}<span class="meta-chip">${b.market}</span></div>
+    <div class="bot-stats">
+      <div class="bs"><div class="bs-val">${b.stake}</div><div class="bs-lbl">Stake</div></div>
+      <div class="bs"><div class="bs-val">${b.wins}%</div><div class="bs-lbl">Win Rate</div></div>
+      <div class="bs"><div class="bs-val ${b.pnl.startsWith('+')?' up':'down'}">${b.pnl}</div><div class="bs-lbl">P&L</div></div>
+    </div>
+    <div class="bot-actions">
+      <button class="btn btn-primary" style="flex:1;padding:0.5rem" onclick="document.getElementById('configModal').classList.add('open')">Configure</button>
+      <button class="btn btn-outline" style="padding:0.5rem 0.75rem">📊</button>
+    </div>`;
+  grid.appendChild(card);
+});
+function toggleBot(i){
+  const t=document.getElementById('toggle'+i);
+  t.classList.toggle('on');
+  const label=t.nextElementSibling;
+  label.textContent=t.classList.contains('on')?'Running':'Stopped';
+}
+</script>
+<script src="js/deriv.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
+
