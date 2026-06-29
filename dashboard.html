@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ManooFX – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0a1a;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--purple:#7c3aed;--purple-lt:#a855f7;--pink:#ec4899;--pink-lt:#f472b6;--white:#f8f4ff;--muted:#9480b8;--card:rgba(255,255,255,0.03);--radius:14px;--sidebar:240px}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden}
+    .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.2;animation:drift 14s ease-in-out infinite alternate}
+    .orb-1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;left:-100px}
+    .orb-2{width:500px;height:500px;background:radial-gradient(circle,#ec4899,transparent 70%);bottom:-100px;right:-100px;animation-delay:-6s}
+    @keyframes drift{from{transform:translate(0,0)}to{transform:translate(30px,20px)}}
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:rgba(13,10,26,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;backdrop-filter:blur(20px)}
+    .sidebar-logo{padding:1.5rem 1.5rem 1rem;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple-lt),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border);margin-bottom:0.5rem}
+    .nav-section{padding:0.5rem 0.75rem;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;margin:0 0.5rem;border-radius:10px;font-size:0.875rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none}
+    .nav-item:hover{background:rgba(168,85,247,0.1);color:var(--white)}
+    .nav-item.active{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));color:var(--white);border:1px solid rgba(168,85,247,0.2)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid var(--border)}
+    .user-pill{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .user-name{font-size:0.82rem;font-weight:600}
+    .user-role{font-size:0.72rem;color:var(--muted)}
+    /* MAIN */
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;position:relative;z-index:10}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(13,10,26,0.7);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+    .page-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+    .topbar-right{display:flex;align-items:center;gap:1rem}
+    .topbar-badge{padding:0.3rem 0.8rem;border-radius:999px;font-size:0.75rem;font-weight:600;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);color:var(--purple-lt)}
+    .notif-btn{width:36px;height:36px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem}
+    .content{padding:2rem}
+    /* BALANCE CARDS */
+    .balance-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;margin-bottom:2rem}
+    .bal-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;position:relative;overflow:hidden;transition:border-color 0.2s}
+    .bal-card:hover{border-color:rgba(168,85,247,0.4)}
+    .bal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+    .bal-label{font-size:0.75rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.6rem}
+    .bal-value{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;margin-bottom:0.4rem}
+    .bal-change{font-size:0.78rem;font-weight:500}
+    .up{color:#a855f7} .down{color:var(--pink)}
+    .bal-icon{position:absolute;top:1.2rem;right:1.2rem;font-size:1.4rem;opacity:0.4}
+    /* TABS */
+    .tab-row{display:flex;gap:0.5rem;margin-bottom:1.5rem}
+    .tab{padding:0.45rem 1rem;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all 0.2s}
+    .tab.active{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border-color:transparent}
+    /* GRID */
+    .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem}
+    .panel-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+    .panel-link{font-size:0.75rem;color:var(--purple-lt);font-weight:500;cursor:pointer}
+    /* CHART MOCKUP */
+    .chart-area{height:160px;position:relative;overflow:hidden}
+    .chart-svg{width:100%;height:100%}
+    /* ACTIVITY */
+    .activity-item{display:flex;align-items:center;gap:0.9rem;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+    .activity-item:last-child{border-bottom:none}
+    .act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .act-info{flex:1}
+    .act-title{font-size:0.85rem;font-weight:500}
+    .act-time{font-size:0.75rem;color:var(--muted)}
+    .act-amount{font-size:0.85rem;font-weight:600}
+    /* BOT STATUS */
+    .bot-row{display:flex;align-items:center;gap:0.85rem;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+    .bot-row:last-child{border-bottom:none}
+    .bot-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .running{background:#a855f7;box-shadow:0 0 6px #a855f7}
+    .stopped{background:var(--muted)}
+    .bot-info{flex:1}
+    .bot-n{font-size:0.85rem;font-weight:500}
+    .bot-m{font-size:0.75rem;color:var(--muted)}
+    .bot-pnl{font-size:0.85rem;font-weight:600}
+    /* QUICK ACTIONS */
+    .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:2rem}
+    .quick-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;cursor:pointer;transition:all 0.2s;text-decoration:none;color:var(--white)}
+    .quick-btn:hover{border-color:rgba(168,85,247,0.5);transform:translateY(-2px)}
+    .quick-icon{font-size:1.4rem}
+    .quick-label{font-size:0.78rem;font-weight:600;text-align:center}
+    @media(max-width:900px){.dash-grid{grid-template-columns:1fr}.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">ManooFX</div>
+  <div class="nav-section">Main</div>
+  <a href="dashboard.html" class="nav-item active"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a href="markets.html" class="nav-item"><span class="nav-icon">📊</span> Markets</a>
+  <a href="trade.html" class="nav-item"><span class="nav-icon">⚡</span> Trade</a>
+  <div class="nav-section">Automation</div>
+  <a href="bots.html" class="nav-item"><span class="nav-icon">🤖</span> AI Bots</a>
+  <a href="analytics.html" class="nav-item"><span class="nav-icon">📈</span> Analytics</a>
+  <a href="ai-analyser.html" class="nav-item"><span class="nav-icon">🧠</span> AI Analyser</a>
+  <div class="nav-section">System</div>
+  <a href="admin.html" class="nav-item"><span class="nav-icon">🛡️</span> Admin</a>
+  <a href="index.html" class="nav-item"><span class="nav-icon">🌐</span> Website</a>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar">M</div>
+      <div><div class="user-name" data-mfx-username>Manoo</div><div class="user-role" data-mfx-role>Admin · Real</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">Dashboard</div>
+    <div class="topbar-right">
+      <div class="topbar-badge">● Live</div>
+      <div class="notif-btn">🔔</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Balance Cards -->
+    <div class="balance-row">
+      <div class="bal-card">
+        <div class="bal-icon">💰</div>
+        <div class="bal-label">Total Balance</div>
+        <div class="bal-value">$1,240.50</div>
+        <div class="bal-change up">▲ +$42.30 today</div>
+      </div>
+      <div class="bal-card">
+        <div class="bal-icon">📊</div>
+        <div class="bal-label">Demo Balance</div>
+        <div class="bal-value">$10,000.00</div>
+        <div class="bal-change" style="color:var(--muted)">Practice account</div>
+      </div>
+      <div class="bal-card">
+        <div class="bal-icon">🤖</div>
+        <div class="bal-label">Bots Running</div>
+        <div class="bal-value">3</div>
+        <div class="bal-change up">▲ 2 profitable</div>
+      </div>
+      <div class="bal-card">
+        <div class="bal-icon">🎯</div>
+        <div class="bal-label">Win Rate</div>
+        <div class="bal-value">64%</div>
+        <div class="bal-change up">▲ +3% this week</div>
+      </div>
+    </div>
+
+    <!-- Account tabs -->
+    <div class="tab-row">
+      <button class="tab active">Real Account</button>
+      <button class="tab">Demo Account</button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-grid">
+      <a href="trade.html" class="quick-btn"><span class="quick-icon">⚡</span><span class="quick-label">Quick Trade</span></a>
+      <a href="bots.html" class="quick-btn"><span class="quick-icon">🤖</span><span class="quick-label">Run a Bot</span></a>
+      <a href="analytics.html" class="quick-btn"><span class="quick-icon">📈</span><span class="quick-label">View Analytics</span></a>
+      <a href="markets.html" class="quick-btn"><span class="quick-icon">📊</span><span class="quick-label">Live Markets</span></a>
+    </div>
+
+    <!-- Main grid -->
+    <div class="dash-grid">
+      <!-- P&L Chart -->
+      <div class="panel">
+        <div class="panel-title">P&L This Week <span class="panel-link">View all →</span></div>
+        <div class="chart-area">
+          <svg class="chart-svg" viewBox="0 0 400 160" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,120 L57,100 L114,110 L171,70 L228,80 L285,40 L342,50 L400,20" fill="none" stroke="url(#pinkGrad2)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M0,120 L57,100 L114,110 L171,70 L228,80 L285,40 L342,50 L400,20 L400,160 L0,160 Z" fill="url(#lineGrad)"/>
+            <defs><linearGradient id="pinkGrad2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-top:0.5rem">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="panel">
+        <div class="panel-title">Recent Trades <span class="panel-link">View all →</span></div>
+        <div class="activity-item"><div class="act-dot" style="background:#a855f7"></div><div class="act-info"><div class="act-title">Digit Differs · V75</div><div class="act-time">2 mins ago</div></div><div class="act-amount up">+$1.85</div></div>
+        <div class="activity-item"><div class="act-dot" style="background:var(--pink)"></div><div class="act-info"><div class="act-title">Even/Odd · V10</div><div class="act-time">5 mins ago</div></div><div class="act-amount down">-$0.35</div></div>
+        <div class="activity-item"><div class="act-dot" style="background:#a855f7"></div><div class="act-info"><div class="act-title">Rise/Fall · V50</div><div class="act-time">12 mins ago</div></div><div class="act-amount up">+$2.40</div></div>
+        <div class="activity-item"><div class="act-dot" style="background:#a855f7"></div><div class="act-info"><div class="act-title">Over/Under · Step</div><div class="act-time">18 mins ago</div></div><div class="act-amount up">+$1.20</div></div>
+        <div class="activity-item"><div class="act-dot" style="background:var(--pink)"></div><div class="act-info"><div class="act-title">Accumulator · V25</div><div class="act-time">25 mins ago</div></div><div class="act-amount down">-$1.00</div></div>
+      </div>
+
+      <!-- Active Bots -->
+      <div class="panel">
+        <div class="panel-title">Active Bots <span class="panel-link"><a href="bots.html" style="color:inherit;text-decoration:none">Manage →</a></span></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Even/Odd Bot</div><div class="bot-m">V75 · $0.50 stake</div></div><div class="bot-pnl up">+$4.20</div></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Digit Differs Bot</div><div class="bot-m">V100 · $1.00 stake</div></div><div class="bot-pnl up">+$8.75</div></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Rise & Fall Bot</div><div class="bot-m">Step Index · $0.35 stake</div></div><div class="bot-pnl down">-$1.05</div></div>
+        <div class="bot-row"><div class="bot-status-dot stopped"></div><div class="bot-info"><div class="bot-n">Accumulator Bot</div><div class="bot-m">V50 · Stopped (TP hit)</div></div><div class="bot-pnl up">+$12.00</div></div>
+      </div>
+
+      <!-- Market Snapshot -->
+      <div class="panel">
+        <div class="panel-title">Market Snapshot <span class="panel-link"><a href="markets.html" style="color:inherit;text-decoration:none">Live →</a></span></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Volatility 75 Index</div><div class="bot-m">Last digit: 7</div></div><div class="bot-pnl up">▲ 0.67%</div></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Volatility 100 Index</div><div class="bot-m">Last digit: 2</div></div><div class="bot-pnl down">▼ 0.29%</div></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Step Index</div><div class="bot-m">Last digit: 5</div></div><div class="bot-pnl up">▲ 0.55%</div></div>
+        <div class="bot-row"><div class="bot-status-dot running"></div><div class="bot-info"><div class="bot-n">Jump 75 Index</div><div class="bot-m">Last digit: 9</div></div><div class="bot-pnl down">▼ 0.88%</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));this.classList.add('active')}));
+</script>
+<script src="js/deriv.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
