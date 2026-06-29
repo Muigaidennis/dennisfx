@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ManooFX – Free AI-powered automated trading bots for Deriv markets. No coding needed." />
+  <title>ManooFX – Best AI Trading Bots for Deriv</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d0a1a; --surface:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
+      --purple:#7c3aed; --purple-lt:#a855f7; --pink:#ec4899; --pink-lt:#f472b6;
+      --white:#f8f4ff; --muted:#9480b8; --card-bg:rgba(255,255,255,0.03); --radius:16px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--white); overflow-x:hidden; line-height:1.6; }
+    .bg-canvas { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+    .orb { position:absolute; border-radius:50%; filter:blur(100px); opacity:0.3; animation:drift 14s ease-in-out infinite alternate; }
+    .orb-1 { width:700px; height:700px; background:radial-gradient(circle,#7c3aed,transparent 70%); top:-200px; left:-200px; animation-duration:16s; }
+    .orb-2 { width:600px; height:600px; background:radial-gradient(circle,#ec4899,transparent 70%); bottom:-150px; right:-150px; animation-duration:12s; animation-delay:-6s; }
+    .orb-3 { width:400px; height:400px; background:radial-gradient(circle,#a855f7,transparent 70%); top:40%; left:60%; transform:translate(-50%,-50%); animation-duration:18s; animation-delay:-4s; opacity:0.15; }
+    @keyframes drift { from{transform:translate(0,0) scale(1)} to{transform:translate(50px,35px) scale(1.1)} }
+    .bg-grid { position:fixed; inset:0; z-index:1; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px); background-size:52px 52px; }
+    nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 5%; height:68px; background:rgba(13,10,26,0.85); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+    .logo { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; letter-spacing:-0.5px; background:linear-gradient(135deg,var(--purple-lt),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-links { display:flex; gap:2rem; font-size:0.88rem; color:var(--muted); }
+    .nav-links a:hover { color:var(--white); }
+    .nav-cta { display:flex; gap:0.75rem; }
+    .btn { padding:0.55rem 1.3rem; border-radius:9px; font-size:0.88rem; font-weight:600; cursor:pointer; border:none; font-family:'Inter',sans-serif; transition:all 0.2s; text-decoration:none; display:inline-block; }
+    .btn-outline { background:transparent; border:1.5px solid rgba(168,85,247,0.5); color:var(--purple-lt); }
+    .btn-outline:hover { background:rgba(168,85,247,0.1); }
+    .btn-primary { background:linear-gradient(135deg,var(--purple),var(--pink)); color:#fff; }
+    .btn-primary:hover { opacity:0.88; transform:translateY(-1px); }
+    .btn-ghost { background:transparent; border:1.5px solid rgba(244,114,182,0.4); color:var(--pink-lt); }
+    .btn-ghost:hover { background:rgba(236,72,153,0.1); }
+    .ticker-bar { position:relative; z-index:10; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); overflow:hidden; padding:0.55rem 0; }
+    .ticker-inner { display:flex; gap:3rem; animation:ticker 28s linear infinite; white-space:nowrap; font-size:0.8rem; }
+    .ticker-item { display:flex; align-items:center; gap:0.45rem; color:var(--muted); }
+    .ticker-up { color:#a855f7; } .ticker-down { color:var(--pink); }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    section { position:relative; z-index:10; padding:5.5rem 5%; }
+    .tag { display:inline-block; font-size:0.72rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; background:linear-gradient(90deg,var(--purple-lt),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.9rem; }
+    h2 { font-family:'Syne',sans-serif; font-size:clamp(1.7rem,3vw,2.5rem); font-weight:700; line-height:1.15; margin-bottom:1rem; }
+    .sub { color:var(--muted); max-width:520px; font-size:0.95rem; margin-bottom:3rem; }
+    .hero { min-height:88vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:7rem 5% 4rem; }
+    .hero-badge { display:inline-flex; align-items:center; gap:0.5rem; padding:0.4rem 1.1rem; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.25); border-radius:999px; font-size:0.78rem; color:var(--purple-lt); font-weight:500; margin-bottom:2rem; }
+    .hero h1 { font-family:'Syne',sans-serif; font-size:clamp(2.4rem,5.5vw,4.2rem); font-weight:800; line-height:1.1; max-width:860px; margin-bottom:1.4rem; }
+    .hero h1 em { font-style:normal; background:linear-gradient(135deg,var(--purple-lt),var(--pink-lt)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero p { color:var(--muted); font-size:clamp(1rem,1.8vw,1.15rem); max-width:540px; margin-bottom:2.5rem; }
+    .hero-actions { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+    .hero-actions .btn { padding:0.8rem 2.2rem; font-size:1rem; }
+    .hero-stats { display:flex; gap:3.5rem; flex-wrap:wrap; justify-content:center; margin-top:4.5rem; padding-top:2.5rem; border-top:1px solid var(--border); width:100%; max-width:640px; }
+    .stat-val { font-family:'Syne',sans-serif; font-size:2rem; font-weight:700; background:linear-gradient(135deg,var(--purple-lt),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .stat-lbl { font-size:0.78rem; color:var(--muted); margin-top:0.2rem; }
+    .bots-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.25rem; }
+    .bot-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; transition:border-color 0.2s,transform 0.2s; cursor:pointer; }
+    .bot-card:hover { border-color:rgba(168,85,247,0.5); transform:translateY(-4px); }
+    .bot-icon { width:44px; height:44px; border-radius:11px; background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15)); border:1px solid rgba(168,85,247,0.2); display:flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:1rem; }
+    .bot-name { font-family:'Syne',sans-serif; font-size:1rem; font-weight:600; margin-bottom:0.4rem; }
+    .bot-desc { font-size:0.83rem; color:var(--muted); line-height:1.55; margin-bottom:1rem; }
+    .bot-chip { display:inline-block; padding:0.22rem 0.7rem; border-radius:999px; font-size:0.72rem; font-weight:500; background:rgba(236,72,153,0.1); color:var(--pink-lt); border:1px solid rgba(236,72,153,0.2); }
+    .builder-wrap { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:24px; padding:4rem 5%; display:grid; grid-template-columns:1fr 1fr; gap:3.5rem; align-items:center; }
+    .builder-visual { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; font-size:0.82rem; color:var(--muted); }
+    .blk { border-radius:9px; padding:0.6rem 1rem; margin-bottom:0.5rem; font-weight:500; display:flex; align-items:center; gap:0.6rem; }
+    .blk-purple { background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.25); color:var(--purple-lt); }
+    .blk-pink { background:rgba(236,72,153,0.1); border:1px solid rgba(236,72,153,0.25); color:var(--pink-lt); }
+    .blk-white { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--white); }
+    .markets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:0.9rem; }
+    .mkt-chip { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:0.85rem 1.1rem; display:flex; align-items:center; gap:0.7rem; font-size:0.87rem; font-weight:500; transition:border-color 0.2s; }
+    .mkt-chip:hover { border-color:rgba(168,85,247,0.4); }
+    .mkt-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:linear-gradient(135deg,var(--purple-lt),var(--pink)); }
+    .risk-band { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:24px; padding:4rem 5%; }
+    .risk-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.25rem; }
+    .risk-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; transition:border-color 0.2s; }
+    .risk-card:hover { border-color:rgba(236,72,153,0.3); }
+    .risk-icon { font-size:1.4rem; margin-bottom:0.75rem; }
+    .risk-title { font-weight:600; margin-bottom:0.35rem; font-size:0.95rem; }
+    .risk-desc { font-size:0.83rem; color:var(--muted); line-height:1.6; }
+    .faq-list { max-width:740px; }
+    .faq-item { border-bottom:1px solid var(--border); padding:1.35rem 0; }
+    .faq-q { font-weight:600; font-size:0.95rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+    .faq-toggle { width:26px; height:26px; border-radius:50%; flex-shrink:0; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.25); display:flex; align-items:center; justify-content:center; color:var(--purple-lt); font-size:1rem; font-weight:700; transition:transform 0.2s,background 0.2s; }
+    .faq-item.open .faq-toggle { transform:rotate(45deg); background:linear-gradient(135deg,var(--purple),var(--pink)); border-color:transparent; color:white; }
+    .faq-a { display:none; margin-top:0.7rem; color:var(--muted); font-size:0.875rem; line-height:1.75; }
+    .faq-item.open .faq-a { display:block; }
+    .cta-band { border-radius:24px; padding:5rem 5%; text-align:center; background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1)); border:1px solid rgba(168,85,247,0.2); position:relative; overflow:hidden; }
+    .cta-band::before { content:''; position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:500px; height:500px; background:radial-gradient(circle,rgba(168,85,247,0.15),transparent 70%); pointer-events:none; }
+    .cta-band h2 { margin-bottom:1rem; }
+    .cta-band p { color:var(--muted); max-width:480px; margin:0 auto 2.5rem; }
+    .cta-actions { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+    .cta-actions .btn { padding:0.85rem 2.5rem; font-size:1rem; }
+    .cta-footnote { margin-top:1.5rem; font-size:0.76rem; color:var(--muted); }
+    footer { position:relative; z-index:10; padding:2.5rem 5%; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; font-size:0.8rem; color:var(--muted); }
+    .foot-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.15rem; background:linear-gradient(135deg,var(--purple-lt),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .foot-links { display:flex; gap:1.5rem; }
+    .foot-links a:hover { color:var(--white); }
+    @media(max-width:768px) { .nav-links{display:none} .builder-wrap{grid-template-columns:1fr} .hero-stats{gap:2rem} footer{flex-direction:column;text-align:center} }
+  </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+<div class="bg-grid"></div>
+
+<nav>
+  <div class="logo">ManooFX</div>
+  <div class="nav-links">
+    <a href="#bots">AI Bots</a><a href="#builder">Bot Builder</a>
+    <a href="#markets">Markets</a><a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="login.html" class="btn btn-outline">Log In</a>
+    <a href="login.html" class="btn btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<div class="ticker-bar">
+  <div class="ticker-inner">
+    <div class="ticker-item">V10 Index <span class="ticker-up">▲ 0.42%</span></div>
+    <div class="ticker-item">V25 Index <span class="ticker-down">▼ 0.18%</span></div>
+    <div class="ticker-item">V50 Index <span class="ticker-up">▲ 1.03%</span></div>
+    <div class="ticker-item">V75 Index <span class="ticker-up">▲ 0.67%</span></div>
+    <div class="ticker-item">V100 Index <span class="ticker-down">▼ 0.29%</span></div>
+    <div class="ticker-item">Step Index <span class="ticker-up">▲ 0.55%</span></div>
+    <div class="ticker-item">Jump 50 <span class="ticker-up">▲ 2.11%</span></div>
+    <div class="ticker-item">Jump 75 <span class="ticker-down">▼ 0.88%</span></div>
+    <div class="ticker-item">V10 Index <span class="ticker-up">▲ 0.42%</span></div>
+    <div class="ticker-item">V25 Index <span class="ticker-down">▼ 0.18%</span></div>
+    <div class="ticker-item">V50 Index <span class="ticker-up">▲ 1.03%</span></div>
+    <div class="ticker-item">V75 Index <span class="ticker-up">▲ 0.67%</span></div>
+    <div class="ticker-item">V100 Index <span class="ticker-down">▼ 0.29%</span></div>
+    <div class="ticker-item">Step Index <span class="ticker-up">▲ 0.55%</span></div>
+    <div class="ticker-item">Jump 50 <span class="ticker-up">▲ 2.11%</span></div>
+    <div class="ticker-item">Jump 75 <span class="ticker-down">▼ 0.88%</span></div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-badge">🤖 Powered by Deriv API</div>
+  <h1>Earn More with <em>ManooFX</em><br/>AI Trading Bots</h1>
+  <p>100% free, high-performance automated trading bots for Deriv markets. No coding needed — click to load and trade.</p>
+  <div class="hero-actions">
+    <a href="login.html" class="btn btn-primary">Start Trading Free</a>
+    <a href="#bots" class="btn btn-outline">Explore AI Bots</a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="stat-val">8+</div><div class="stat-lbl">AI Strategies</div></div>
+    <div><div class="stat-val">$0.35</div><div class="stat-lbl">Min. Stake</div></div>
+    <div><div class="stat-val">100%</div><div class="stat-lbl">Free to Use</div></div>
+    <div><div class="stat-val">24/7</div><div class="stat-lbl">Live Markets</div></div>
+  </div>
+</section>
+
+<section id="bots">
+  <div class="tag">AI Auto-Trading Strategies</div>
+  <h2>Bots That Work While You Rest</h2>
+  <p class="sub">Built-in automated strategies that run on live Deriv market data with zero manual intervention.</p>
+  <div class="bots-grid">
+    <div class="bot-card"><div class="bot-icon">🎯</div><div class="bot-name">Digit Over/Under Bot</div><div class="bot-desc">Trades based on whether the last digit is above or below your chosen barrier.</div><span class="bot-chip">Digit Markets</span></div>
+    <div class="bot-card"><div class="bot-icon">⚖️</div><div class="bot-name">Even/Odd Bot</div><div class="bot-desc">Automatically trades even or odd digit outcomes with configurable martingale recovery.</div><span class="bot-chip">Even/Odd</span></div>
+    <div class="bot-card"><div class="bot-icon">🔍</div><div class="bot-name">Matches/Differs Bot</div><div class="bot-desc">AI-powered signal detection for digit match and differ trades on volatility indices.</div><span class="bot-chip">AI Signals</span></div>
+    <div class="bot-card"><div class="bot-icon">📈</div><div class="bot-name">Rise and Fall Bot</div><div class="bot-desc">Automated rise/fall trading with HMM pattern analysis for real-time trend detection.</div><span class="bot-chip">Trend Trading</span></div>
+    <div class="bot-card"><div class="bot-icon">🌀</div><div class="bot-name">Accumulator Bot</div><div class="bot-desc">Smart accumulator trading with intelligent barrier management and compounding logic.</div><span class="bot-chip">Accumulator</span></div>
+    <div class="bot-card"><div class="bot-icon">👑</div><div class="bot-name">Dominant Digit Differs</div><div class="bot-desc">Detects dominant digit exhaustion and trades the differ at the perfect moment.</div><span class="bot-chip">Advanced AI</span></div>
+    <div class="bot-card"><div class="bot-icon">🔄</div><div class="bot-name">RC Even/Odd Bot</div><div class="bot-desc">Percentage-based even/odd strategy with a built-in recovery mode for loss sequences.</div><span class="bot-chip">Recovery</span></div>
+    <div class="bot-card"><div class="bot-icon">🧪</div><div class="bot-name">Over 5 Demo Bot</div><div class="bot-desc">Virtual loss entry — observe the market before committing real stakes.</div><span class="bot-chip">Demo Mode</span></div>
+  </div>
+</section>
+
+<section id="builder" style="padding-top:0">
+  <div class="builder-wrap">
+    <div>
+      <div class="tag">Visual Bot Builder</div>
+      <h2>Build Custom Bots Without Code</h2>
+      <p class="sub" style="margin-bottom:2rem">Drag and drop logic blocks to define trading conditions, purchase rules, and risk controls. Export as XML or import any compatible bot instantly.</p>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap">
+        <a href="login.html" class="btn btn-primary">Open Bot Builder</a>
+        <a href="login.html" class="btn btn-outline">Import XML Bot</a>
+      </div>
+    </div>
+    <div class="builder-visual">
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;color:var(--muted)">Bot Logic Preview</div>
+      <div class="blk blk-purple">📌 Market: Volatility 75 Index</div>
+      <div class="blk blk-pink">💰 Stake: $1.00 · Martingale: 2×</div>
+      <div class="blk blk-purple">🎯 Contract: Digit Differs — 5</div>
+      <div class="blk blk-white">🔁 If loss → Double stake next trade</div>
+      <div class="blk blk-pink">🛑 Stop Loss: $10 · Take Profit: $25</div>
+      <div class="blk blk-purple">✅ Max Consecutive Losses: 5</div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:0.78rem">
+        <span>Status: <span style="color:#a855f7">● Ready to run</span></span>
+        <span style="color:var(--pink-lt);cursor:pointer">Export XML ↗</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="markets">
+  <div class="tag">Supported Markets</div>
+  <h2>Trade on 20+ Deriv Markets</h2>
+  <p class="sub">All ManooFX bots work on Deriv's full synthetic indices range — available 24/7, no market closures.</p>
+  <div class="markets-grid">
+    <div class="mkt-chip"><span class="mkt-dot"></span>Volatility 10 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Volatility 25 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Volatility 50 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Volatility 75 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Volatility 100 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>V10 (1s) Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>V25 (1s) Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>V50 (1s) Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>V75 (1s) Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>V100 (1s) Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Step Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Jump 10 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Jump 25 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Jump 50 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Jump 75 Index</div>
+    <div class="mkt-chip"><span class="mkt-dot"></span>Jump 100 Index</div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="risk-band">
+    <div class="tag">Risk Management</div>
+    <h2>Full Control Over Every Trade</h2>
+    <p class="sub">Every strategy comes with configurable controls so you never trade beyond your comfort zone.</p>
+    <div class="risk-grid">
+      <div class="risk-card"><div class="risk-icon">🎯</div><div class="risk-title">Take Profit</div><div class="risk-desc">Set a profit target and the bot stops automatically when you hit it. Lock in gains hands-free.</div></div>
+      <div class="risk-card"><div class="risk-icon">🛑</div><div class="risk-title">Stop Loss</div><div class="risk-desc">Define your maximum session loss. The bot halts the moment you reach your limit.</div></div>
+      <div class="risk-card"><div class="risk-icon">✖️</div><div class="risk-title">Martingale Multiplier</div><div class="risk-desc">Configure stake doubling after losses to recover faster. Adjustable from 1× to 10×.</div></div>
+      <div class="risk-card"><div class="risk-icon">🔢</div><div class="risk-title">Max Consecutive Losses</div><div class="risk-desc">Hard limit on loss streaks before the bot pauses, protecting your balance automatically.</div></div>
+      <div class="risk-card"><div class="risk-icon">👁️</div><div class="risk-title">Virtual Loss Entry</div><div class="risk-desc">Observe market conditions virtually before committing real money. Enter only when ready.</div></div>
+      <div class="risk-card"><div class="risk-icon">🔁</div><div class="risk-title">Auto Recovery Mode</div><div class="risk-desc">Switches to a safer strategy after a loss streak to minimize drawdown and recover steadily.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="tag">FAQ</div>
+  <h2>Frequently Asked Questions</h2>
+  <p class="sub">Everything you need to know about trading with ManooFX.</p>
+  <div class="faq-list">
+    <div class="faq-item open"><div class="faq-q" onclick="toggleFaq(this)">Is ManooFX free to use?<span class="faq-toggle">+</span></div><div class="faq-a">Yes. ManooFX is 100% free. You only need a Deriv account to execute live trades. No hidden charges or subscriptions.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need coding skills?<span class="faq-toggle">+</span></div><div class="faq-a">No. The visual bot builder requires zero programming. Pre-built AI strategies run automatically — just enter your stake and click start.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What is the minimum stake?<span class="faq-toggle">+</span></div><div class="faq-a">Most strategies start from $0.35 USD. Accumulator strategies require a minimum of $1.00 per trade.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I use ManooFX on mobile?<span class="faq-toggle">+</span></div><div class="faq-a">Yes. ManooFX is fully responsive and works on any modern mobile browser — no app download required.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I connect my Deriv account?<span class="faq-toggle">+</span></div><div class="faq-a">Click "Log In" and authenticate via Deriv OAuth. ManooFX uses secure OAuth 2.0 — your Deriv credentials are never stored on our servers.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I upload my own bot XML files?<span class="faq-toggle">+</span></div><div class="faq-a">Yes. Import any Deriv-compatible XML bot file and the builder will automatically parse all parameters for easy configuration.</div></div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="cta-band">
+    <div class="tag">Get Started Today</div>
+    <h2>Ready to Trade Smarter?</h2>
+    <p>Join ManooFX and let AI-powered bots work the markets while you focus on what matters.</p>
+    <div class="cta-actions">
+      <a href="login.html" class="btn btn-primary">Create Free Account</a>
+      <a href="#bots" class="btn btn-ghost">Explore Bots</a>
+    </div>
+    <div class="cta-footnote">Powered by Deriv API · Secure OAuth Login · No Download Required</div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="foot-logo">ManooFX</div>
+    <div style="margin-top:0.3rem">© 2026 ManooFX. AI Trading Platform. All rights reserved.</div>
+  </div>
+  <div class="foot-links">
+    <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Support</a><a href="#">Deriv</a>
+  </div>
+</footer>
+
+<script>
+  function toggleFaq(el) { el.closest('.faq-item').classList.toggle('open'); }
+</script>
+</body>
+</html>
