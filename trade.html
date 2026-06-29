@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ManooFX – Trade</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0d0a1a;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--purple:#7c3aed;--purple-lt:#a855f7;--pink:#ec4899;--pink-lt:#f472b6;--white:#f8f4ff;--muted:#9480b8;--card:rgba(255,255,255,0.03);--radius:14px;--sidebar:240px}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden}
+    .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.18;animation:drift 14s ease-in-out infinite alternate}
+    .orb-1{width:600px;height:600px;background:radial-gradient(circle,#7c3aed,transparent 70%);top:-150px;left:-100px}
+    .orb-2{width:500px;height:500px;background:radial-gradient(circle,#ec4899,transparent 70%);bottom:-100px;right:-100px;animation-delay:-6s}
+    @keyframes drift{from{transform:translate(0,0)}to{transform:translate(30px,20px)}}
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:rgba(13,10,26,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;backdrop-filter:blur(20px)}
+    .sidebar-logo{padding:1.5rem 1.5rem 1rem;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple-lt),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;border-bottom:1px solid var(--border);margin-bottom:0.5rem}
+    .nav-section{padding:0.5rem 0.75rem;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem}
+    .nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;margin:0 0.5rem;border-radius:10px;font-size:0.875rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none}
+    .nav-item:hover{background:rgba(168,85,247,0.1);color:var(--white)}
+    .nav-item.active{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(236,72,153,0.15));color:var(--white);border:1px solid rgba(168,85,247,0.2)}
+    .nav-icon{font-size:1rem;width:20px;text-align:center}
+    .sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid var(--border)}
+    .user-pill{display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;position:relative;z-index:10}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(13,10,26,0.7);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+    .page-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+    .content{padding:2rem;display:grid;grid-template-columns:1fr 360px;gap:1.5rem;align-items:start}
+    /* Chart area */
+    .chart-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .chart-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border)}
+    .market-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.8rem;color:var(--white);font-family:'Inter',sans-serif;font-size:0.85rem;cursor:pointer;outline:none}
+    .market-select option{background:#1a1030}
+    .price-display{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700}
+    .price-change{font-size:0.78rem;padding:0.2rem 0.5rem;border-radius:5px;background:rgba(168,85,247,0.15);color:var(--purple-lt);font-weight:600}
+    .timeframe-row{display:flex;gap:0.4rem;padding:0.75rem 1.5rem;border-bottom:1px solid var(--border)}
+    .tf{padding:0.3rem 0.7rem;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;border:1px solid transparent;color:var(--muted);background:transparent;font-family:'Inter',sans-serif;transition:all 0.2s}
+    .tf.active{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff}
+    .chart-body{padding:1rem 1.5rem;height:320px;position:relative}
+    .chart-svg{width:100%;height:100%}
+    /* Last digits strip */
+    .digits-strip{display:flex;gap:0.35rem;padding:0.75rem 1.5rem;border-top:1px solid var(--border);overflow-x:auto}
+    .ds{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:700;flex-shrink:0}
+    .ds-e{background:rgba(168,85,247,0.15);color:var(--purple-lt);border:1px solid rgba(168,85,247,0.3)}
+    .ds-o{background:rgba(236,72,153,0.12);color:var(--pink-lt);border:1px solid rgba(236,72,153,0.25)}
+    /* Trade panel */
+    .trade-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;position:sticky;top:90px}
+    .panel-title{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:1.25rem}
+    /* Contract type */
+    .contract-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1.25rem}
+    .ct{padding:0.6rem;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s}
+    .ct.active{background:linear-gradient(135deg,rgba(124,58,237,0.25),rgba(236,72,153,0.2));border-color:rgba(168,85,247,0.4);color:var(--white)}
+    /* Input */
+    .field{margin-bottom:1rem}
+    .field label{display:block;font-size:0.75rem;font-weight:500;color:var(--muted);margin-bottom:0.4rem}
+    .field input,.field select{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;padding:0.7rem 1rem;color:var(--white);font-family:'Inter',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s}
+    .field input:focus,.field select:focus{border-color:var(--purple-lt)}
+    .field select option{background:#1a1030}
+    /* Payout display */
+    .payout-box{background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:10px;padding:1rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+    .payout-label{font-size:0.78rem;color:var(--muted)}
+    .payout-val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:var(--purple-lt)}
+    /* Buy buttons */
+    .buy-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}
+    .buy-btn{padding:0.85rem;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s}
+    .buy-rise{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff}
+    .buy-fall{background:linear-gradient(135deg,var(--pink),#be185d);color:#fff}
+    .buy-rise:hover,.buy-fall:hover{transform:translateY(-2px);opacity:0.9}
+    /* Risk controls */
+    .risk-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+    /* Trade log */
+    .trade-log{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:1.5rem}
+    .log-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.5rem;padding:0.7rem 0;border-bottom:1px solid var(--border);font-size:0.82rem;align-items:center}
+    .log-row:last-child{border-bottom:none}
+    .log-header{font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+    .badge{padding:0.2rem 0.55rem;border-radius:5px;font-size:0.72rem;font-weight:600}
+    .badge-win{background:rgba(168,85,247,0.15);color:var(--purple-lt)}
+    .badge-loss{background:rgba(236,72,153,0.15);color:var(--pink-lt)}
+    @media(max-width:1100px){.content{grid-template-columns:1fr}.trade-panel{position:static}}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+<aside class="sidebar">
+  <div class="sidebar-logo">ManooFX</div>
+  <div class="nav-section">Main</div>
+  <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a href="markets.html" class="nav-item"><span class="nav-icon">📊</span> Markets</a>
+  <a href="trade.html" class="nav-item active"><span class="nav-icon">⚡</span> Trade</a>
+  <div class="nav-section">Automation</div>
+  <a href="bots.html" class="nav-item"><span class="nav-icon">🤖</span> AI Bots</a>
+  <a href="analytics.html" class="nav-item"><span class="nav-icon">📈</span> Analytics</a>
+  <a href="ai-analyser.html" class="nav-item"><span class="nav-icon">🧠</span> AI Analyser</a>
+  <div class="nav-section">System</div>
+  <a href="admin.html" class="nav-item"><span class="nav-icon">🛡️</span> Admin</a>
+  <a href="index.html" class="nav-item"><span class="nav-icon">🌐</span> Website</a>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar">M</div>
+      <div><div style="font-size:0.82rem;font-weight:600">Manoo</div><div style="font-size:0.72rem;color:var(--muted)">Admin · Real</div></div>
+    </div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="page-title">Trade</div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <span style="font-size:0.82rem;color:var(--muted)">Balance:</span>
+      <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--purple-lt)">$1,240.50</span>
+    </div>
+  </div>
+  <div class="content">
+    <!-- Chart -->
+    <div>
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div>
+            <select class="market-select" id="mktSelect">
+              <option>Volatility 75 Index</option>
+              <option>Volatility 100 Index</option>
+              <option>Volatility 50 Index</option>
+              <option>Step Index</option>
+              <option>Jump 75 Index</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="price-display" id="priceDisplay">8,934.12</div>
+            <div class="price-change">▲ 0.67%</div>
+          </div>
+        </div>
+        <div class="timeframe-row">
+          <button class="tf" onclick="setTF(this)">1T</button>
+          <button class="tf active" onclick="setTF(this)">1M</button>
+          <button class="tf" onclick="setTF(this)">5M</button>
+          <button class="tf" onclick="setTF(this)">15M</button>
+          <button class="tf" onclick="setTF(this)">1H</button>
+        </div>
+        <div class="chart-body">
+          <svg class="chart-svg" viewBox="0 0 600 280" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="0" y1="70" x2="600" y2="70" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="140" x2="600" y2="140" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="210" x2="600" y2="210" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <!-- Price line -->
+            <path d="M0,220 L40,200 L80,210 L120,180 L160,190 L200,150 L240,160 L280,120 L320,130 L360,100 L400,110 L440,75 L480,85 L520,50 L560,60 L600,30" fill="none" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M0,220 L40,200 L80,210 L120,180 L160,190 L200,150 L240,160 L280,120 L320,130 L360,100 L400,110 L440,75 L480,85 L520,50 L560,60 L600,30 L600,280 L0,280 Z" fill="url(#cg)"/>
+            <!-- Current price line -->
+            <line x1="0" y1="30" x2="600" y2="30" stroke="rgba(168,85,247,0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+          </svg>
+        </div>
+        <div class="digits-strip" id="digitStrip"></div>
+      </div>
+      <!-- Trade log -->
+      <div class="trade-log">
+        <div class="panel-title" style="margin-bottom:1rem">Recent Trades</div>
+        <div class="log-row log-header"><div>Contract</div><div>Market</div><div>Stake</div><div>Payout</div><div>Result</div></div>
+        <div class="log-row"><div>Digit Differs 5</div><div>V75</div><div>$1.00</div><div>$1.85</div><div><span class="badge badge-win">Win</span></div></div>
+        <div class="log-row"><div>Even/Odd Even</div><div>V10</div><div>$0.35</div><div>—</div><div><span class="badge badge-loss">Loss</span></div></div>
+        <div class="log-row"><div>Rise/Fall Rise</div><div>V50</div><div>$1.00</div><div>$1.92</div><div><span class="badge badge-win">Win</span></div></div>
+        <div class="log-row"><div>Over/Under Over 5</div><div>Step</div><div>$0.50</div><div>$0.95</div><div><span class="badge badge-win">Win</span></div></div>
+        <div class="log-row"><div>Matches 3</div><div>V100</div><div>$0.35</div><div>—</div><div><span class="badge badge-loss">Loss</span></div></div>
+      </div>
+    </div>
+    <!-- Trade panel -->
+    <div class="trade-panel">
+      <div class="panel-title">Place Trade</div>
+      <div class="contract-tabs">
+        <button class="ct active" onclick="setCT(this)">Digit</button>
+        <button class="ct" onclick="setCT(this)">Rise/Fall</button>
+        <button class="ct" onclick="setCT(this)">Over/Under</button>
+        <button class="ct" onclick="setCT(this)">Even/Odd</button>
+      </div>
+      <div class="field">
+        <label>Market</label>
+        <select><option>Volatility 75 Index</option><option>Volatility 100 Index</option><option>Step Index</option><option>Jump 75 Index</option></select>
+      </div>
+      <div class="field">
+        <label>Contract Type</label>
+        <select><option>Digit Differs</option><option>Digit Matches</option><option>Digit Over</option><option>Digit Under</option></select>
+      </div>
+      <div class="field">
+        <label>Barrier (Digit)</label>
+        <select><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select>
+      </div>
+      <div class="field">
+        <label>Stake (USD)</label>
+        <input type="number" value="1.00" min="0.35" step="0.01" id="stakeInput" oninput="updatePayout(this.value)"/>
+      </div>
+      <div class="field">
+        <label>Duration</label>
+        <select><option>1 Tick</option><option selected>5 Ticks</option><option>10 Ticks</option></select>
+      </div>
+      <div class="payout-box">
+        <div><div class="payout-label">Estimated Payout</div><div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">Win probability ~91%</div></div>
+        <div class="payout-val" id="payoutVal">$1.85</div>
+      </div>
+      <div class="buy-row">
+        <button class="buy-btn buy-rise" onclick="placeTrade('Rise')">▲ Rise</button>
+        <button class="buy-btn buy-fall" onclick="placeTrade('Fall')">▼ Fall</button>
+      </div>
+      <div class="risk-row">
+        <div class="field" style="margin:0"><label>Take Profit ($)</label><input type="number" placeholder="25.00"/></div>
+        <div class="field" style="margin:0"><label>Stop Loss ($)</label><input type="number" placeholder="10.00"/></div>
+      </div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.75rem;color:var(--muted);text-align:center">
+        Account: Real · Balance: <span style="color:var(--purple-lt);font-weight:600">$1,240.50</span>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+  function setTF(el){document.querySelectorAll('.tf').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+  function setCT(el){document.querySelectorAll('.ct').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+  function updatePayout(v){const p=(parseFloat(v)||0)*1.85;document.getElementById('payoutVal').textContent='$'+p.toFixed(2)}
+  function placeTrade(dir){
+    const s=document.getElementById('stakeInput').value;
+    const win=Math.random()>0.4;
+    alert((win?'✅ Win! +$'+(parseFloat(s)*1.85).toFixed(2):'❌ Loss -$'+s)+'\nDirection: '+dir+'\n(Backend not connected yet)');
+  }
+  // Render digit strip
+  const strip=document.getElementById('digitStrip');
+  [3,7,1,4,9,2,6,0,5,8,3,1,7,4,2,9,6,0,8,5].forEach(d=>{
+    const el=document.createElement('div');
+    el.className='ds '+(d%2===0?'ds-e':'ds-o');
+    el.textContent=d;strip.appendChild(el);
+  });
+</script>
+<script src="js/deriv.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
